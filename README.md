@@ -1,7 +1,7 @@
 # Interactive charts
 
 > **THIS IS THE TEMPLATE FOR EVERY CHART ON THE WEB.** `<gwi-chart>` is the web version of the
-> "Data viz templates" in `../Presentations/Presentation Template.html` (slides 16 to 27). Same marks, same colours,
+> GWI Design System data viz templates. Same marks, same colours,
 > same rules. Do not restyle a chart with site CSS, swap its colours, or build charts with another
 > library. Change the data, the title, the subtitle and the source. The only styling allowed is the `--gwi-*` variables (see "Styling with CSS variables"), and only when asked for. If a chart you need
 > is missing, tell the design lead (Stavros) so it can be added here.
@@ -13,18 +13,27 @@ It works in any HTML page or CMS, and its styles are sealed inside the tag so th
 
 | File | What it is |
 |---|---|
-| `Interactive charts template.html` | The gallery. One live example of every chart with copy and paste embed code. Open it first. |
 | `gwi-chart.standalone.js` | **The file to put on a website.** Fonts are built in, so this one file is all a page needs. |
 | `source/gwi-chart.js` | The same component without built in fonts, and the one we edit. Loads Ovo and Instrument Sans from `source/fonts/`. Not needed on a website. |
 | `source/fonts/` | Instrument Sans and Ovo as woff2. Only needed with `source/gwi-chart.js` and for the build. |
 | `source/build-standalone.py` | Rebuilds `gwi-chart.standalone.js` after `source/gwi-chart.js` changes. |
 
+## Load it on a site (Webflow or any page)
+
+Add this once to the site-wide footer code, not to every page or chart:
+
+```html
+<script src="https://cdn.jsdelivr.net/gh/GWI-GlobalWebIndex/InteractiveGraphs@1.3.0/gwi-chart.standalone.js"></script>
+```
+
+`@1.3.0` is a git tag. To roll out a new version, push the change, create a new tag (for example `1.3.1`) and change the number in that one line. Each chart is then a short `<gwi-chart>` tag in a code embed.
+
 ## Making a chart with Claude
 
-For Claude, and for anyone using Claude to make a chart. One chart at a time, from the chart types in the gallery (`Interactive charts template.html`).
+For Claude, and for anyone using Claude to make a chart. One chart at a time, from the chart types listed in this README.
 
 1. **Ask for the small print first.** If the person has not already given them, ask for the **Source**, the **Base** and the **question(s)** asked to get the data. For each question, ask for the **link** too (an https URL). Do not invent any of these. If something is missing, leave that attribute out rather than make it up, and say so.
-2. **Use the gallery chart they name.** Take its embed code, keep its structure, and change only the data, title, subtitle, unit, source, base and questions.
+2. **Use the chart type they name.** Take the matching example in this README, keep its structure, and change only the data, title, subtitle, unit, source, base and questions.
 3. **Hand back only the tag.** Give one code block with a single `<gwi-chart>` tag and its data script inside it. Do not add a script that loads the component. The website loads it once for every page, and adding it again breaks the charts.
 4. **Do not restyle unless asked.** No custom CSS, colours or fonts by default. The rules below are built in. If the person asks for a styling change, set only the `--gwi-*` variables from "Styling with CSS variables" in the `style` attribute of the tag, and say which ones you set.
 
@@ -119,7 +128,7 @@ A CSV for `src` has the categories in the first column, one column per series, a
 Top to bottom: **title, subtitle, key (when there are two or more series, or a gradient for the heatmap), graph, and a row of buttons.**
 The key is always under the subtitle. The bottom row has "View as table" and "Download data (CSV)" on the left, and two buttons
 at the bottom right: **Sources** then **Download image** (Download image is the rightmost). These use the Buttons component
-(`../../Components/Buttons/README.md`): fully rounded pills, Light mode (charts sit on light backgrounds), no icon: Download image is Primary, Sources is Secondary. Charts use the compact size, 30px high with a 14px SemiBold label and 16px side padding, instead of the standard 60px. "Back to chart" on the card's back is a
+(the GWI Design System button spec): fully rounded pills, Light mode (charts sit on light backgrounds), no icon: Download image is Primary, Sources is Secondary. Charts use the compact size, 30px high with a 14px SemiBold label and 16px side padding, instead of the standard 60px. "Back to chart" on the card's back is a
 Primary, Light mode button at the same size. The two text links on the left are links, not buttons, and keep their underline style.
 
 - **Download image** saves a JPG of the chart as it looks on screen: title, subtitle, key, graph, and a line with the source and base. The buttons are left out. It is made in the browser, at twice the size, on a white background.
@@ -269,12 +278,12 @@ The tag fires `gwi-chart-ready`, `gwi-chart-error` (with `detail.message`) and `
 
 You cannot get these wrong, because the component enforces them. Do not try to override them.
 
-- **Colours** follow `../../tokens/color-usage.md`. One series: pink, with grey as context. Two: pink, lime.
+- **Colours** follow the GWI Design System colour usage rules. One series: pink, with grey as context. Two: pink, lime.
   Three: deep pink, pink, lime. Four: deep pink, pink, lime, dark lime. Five or more: the pink magnitude ramp.
   Series keep their colour in every chart and are never reordered.
 - **Marks** have a 6px corner radius (bars, columns, stacked segments, cells and tiles alike, never fully rounded), light grey tracks, and white gaps between touching segments. Single series bar charts have no separator lines. Grouped bars and columns have a light grey separator line between the groups, never between the bars.
 - **Numbers** are plain, in the series colour. The `%` shows once, as the Top, Side or Diagonal symbol from
-  `../../Components/Presentations/Data viz`, always at the same scale.
+  the GWI Design System data viz set, always at the same scale.
 - **Key** entries always have the same gap, and the key is always present for two or more series.
 - **Type** is Instrument Sans throughout, with the title in Regular weight. Ovo is only for the big number and tile values.
 - **Treemaps and heatmaps** use one hue from light to dark, with dark text on light steps and white on dark ones.
@@ -290,5 +299,4 @@ You cannot get these wrong, because the component enforces them. Do not try to o
 ## Changing the component
 
 Edit `source/gwi-chart.js`, then run `python3 source/build-standalone.py` to rebuild the standalone file. Colours, mark sizes and
-the key gap are constants at the top of the file, and they come from `tokens/color.json` and
-`../../Components/Presentations/README.md`. If a design rule changes there, change it here too.
+the key gap are constants at the top of the file, and they come from the GWI Design System colour tokens and data viz rules. If a design rule changes there, change it here too.

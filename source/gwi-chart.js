@@ -1,5 +1,5 @@
-/*! GWI interactive charts, v1.2. <gwi-chart> web component and <gwi-chart-carousel>. No dependencies.
- *  Built from the GWI Design System 2026 "Data viz templates" (Templates/Presentations/Presentation Template.html, slides 10 to 21).
+/*! GWI interactive charts, v1.3.0. <gwi-chart> web component and <gwi-chart-carousel>. No dependencies.
+ *  Built from the GWI Design System 2026 data viz templates.
  *  Usage: load gwi-chart.js with a script tag, then  <gwi-chart type="bar" data='{...}'></gwi-chart>
  *  Docs: README.md next to this file. */
 (function () {
@@ -8,7 +8,7 @@
 
   var SCRIPT_SRC = (document.currentScript && document.currentScript.src) || '';
 
-  /* ---------- tokens (tokens/color.json: color.dataviz.*, color.neutral.*) ---------- */
+  /* ---------- tokens (GWI Design System colour tokens: dataviz and neutral) ---------- */
   var C = { pink: '#FF0077', lime: '#B9DB51', deep: '#940045', dlime: '#729508', grey: '#B0ACAA',
     ink: '#282523', ink100: '#1E1B1A', muted: '#7F7B79', soft: '#9C9896', grid: '#E8E5E3', track: '#F9F7F6', axis: '#D4D0CE', white: '#FFFFFF' };
   var SETS = { 1: [C.pink], 2: [C.pink, C.lime], 3: [C.deep, C.pink, C.lime], 4: [C.deep, C.pink, C.lime, C.dlime] };
@@ -1448,7 +1448,7 @@
   };
 
   window.GwiChart = window.GwiChart || {};
-  window.GwiChart.version = '1.2.0';
+  window.GwiChart.version = '1.3.0';
   window.GwiChart.cssVars = VARNAMES.slice();
   window.GwiChart.types = ['bar', 'column', 'line', 'area', 'stacked-area', 'stacked-bar', 'stacked-column', 'heatmap', 'treemap', 'sankey', 'scatter', 'dot-plot', 'slope', 'half-donut', 'stat', 'stats', 'stat-bar'];
   fontCSS();
