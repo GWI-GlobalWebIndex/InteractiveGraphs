@@ -1,0 +1,1662 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Interactive charts template</title>
+<style>
+@font-face{font-family:"Instrument Sans";font-weight:400 700;font-stretch:75% 100%;font-display:swap;src:url("source/fonts/InstrumentSans.woff2") format("woff2")}
+@font-face{font-family:"Ovo";font-weight:400;font-display:swap;src:url("source/fonts/Ovo-Regular.woff2") format("woff2")}
+:root{--ink:#282523;--muted:#7F7B79;--grid:#E8E5E3;--box:#F9F7F6;--pink:#FF0077;--lime:#B9DB51}
+*{box-sizing:border-box}
+body{margin:0;background:#fff;color:var(--ink);font-family:"Instrument Sans",system-ui,sans-serif;font-size:16px;line-height:1.45}
+header,section,.toc,footer{max-width:1120px;margin:0 auto;padding-left:24px;padding-right:24px}
+header{padding-top:64px;padding-bottom:24px}
+header h1{font-family:"Ovo",serif;font-weight:400;font-size:clamp(44px,7vw,84px);line-height:.9;margin:0;max-width:16ch;text-wrap:balance}
+header p{font-size:20px;color:var(--muted);max-width:60ch;margin:20px 0 0}
+.law{margin:28px 0 0;padding:20px 24px;background:var(--box);border-radius:16px;font-size:15px;max-width:760px}
+.law b{color:var(--ink)}
+.toc{display:flex;flex-wrap:wrap;gap:10px;padding-top:16px;padding-bottom:32px;position:sticky;top:0;background:rgba(255,255,255,.94);backdrop-filter:blur(8px);z-index:10;border-bottom:1px solid var(--grid)}
+.toc a{font-size:14px;font-weight:500;color:var(--ink);text-decoration:none;padding:6px 14px;border-radius:999px;background:var(--box)}
+.toc a:hover{background:var(--lime)}
+section{padding-top:72px;padding-bottom:8px;scroll-margin-top:60px}
+.sh h2{font-family:"Ovo",serif;font-weight:400;font-size:44px;line-height:.95;margin:0}
+.demo{max-width:760px}
+.eyebrow{display:inline-block;margin:0 0 20px;padding:6px 10px;background:#CDE67F;border:1px solid var(--ink);border-radius:999px;color:var(--ink);font-size:12px;font-weight:600;line-height:1;letter-spacing:.08em;text-transform:uppercase}
+.sh p{margin:0 0 28px;color:var(--muted);max-width:64ch}
+.sh code{font-size:.9em;background:var(--box);padding:1px 6px;border-radius:4px}
+details{margin-top:28px;border-top:1px solid var(--grid)}
+.note{margin:0 0 14px;font-size:14px;color:var(--muted);max-width:64ch}.note code{font-size:.9em;background:var(--box);padding:1px 6px;border-radius:4px}
+summary{cursor:pointer;padding:14px 0;font-weight:600;font-size:15px}
+.code{position:relative}
+.code pre{margin:0;background:#1E1B1A;color:#F9F7F6;padding:20px 24px;border-radius:12px;overflow:auto;max-height:420px;font-size:13px;line-height:1.5}
+.copy{position:absolute;right:12px;top:12px;font:inherit;font-size:12px;font-weight:600;background:var(--lime);color:#1E1B1A;border:0;border-radius:999px;padding:6px 14px;cursor:pointer}
+footer{padding-top:72px;padding-bottom:96px;color:var(--muted);font-size:14px}
+footer h2{font-family:"Ovo",serif;font-weight:400;font-size:32px;color:var(--ink);margin:0 0 12px}
+footer pre{background:#1E1B1A;color:#F9F7F6;padding:20px 24px;border-radius:12px;overflow:auto;font-size:13px}
+.howto{padding-top:40px;padding-bottom:40px;border-bottom:1px solid var(--grid)}
+.howto h2{font-family:"Ovo",serif;font-weight:400;font-size:32px;color:var(--ink);margin:0 0 20px}
+.howto ol{margin:0 0 24px;padding:0;list-style:none;counter-reset:s;display:grid;gap:14px;max-width:72ch}
+.howto li{counter-increment:s;position:relative;padding-left:44px;font-size:16px;line-height:1.5}
+.howto li::before{content:counter(s);position:absolute;left:0;top:0;width:28px;height:28px;border-radius:50%;background:var(--lime);color:var(--ink);font-weight:600;font-size:14px;display:grid;place-items:center}
+.howto li b{font-weight:600}
+.howto details{max-width:760px;margin-top:0;border-top:1px solid var(--grid)}.howto pre{margin:0;max-height:420px;background:#1E1B1A;color:#F9F7F6;padding:20px 24px;border-radius:12px;white-space:pre;overflow:auto;font-size:13px;line-height:1.5}
+.vars{margin:0 0 20px;padding:0;list-style:none;display:grid;gap:8px;font-size:14px}.vars li{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:16px;padding-bottom:8px;border-bottom:1px solid var(--grid)}.vars code{font-size:.9em;background:var(--box);padding:1px 6px;border-radius:4px;overflow-wrap:anywhere}.vars span{color:var(--muted)}@media (max-width:640px){.vars li{grid-template-columns:1fr;gap:4px}}
+.howto .hint{margin:16px 0 0;font-size:14px;color:var(--muted);max-width:72ch}
+</style></head><body>
+<header><div class="eyebrow">V1.3 - GWI October 2026</div><h1>Interactive charts template</h1></header>
+<nav class="toc" aria-label="Chart types"><a href="#stat">Big number and tiles</a><a href="#bar-highlight">Bar, highlighted</a><a href="#bar-single">Bar, one series</a><a href="#bar-single-above">Bar, statement above</a><a href="#bar-grouped">Bar, grouped</a><a href="#column">Column</a><a href="#column-single">Column, one series</a><a href="#column-wide">Column, wide</a><a href="#line">Line</a><a href="#area">Area</a><a href="#stacked-area">Stacked area</a><a href="#stacked-bar">Stacked bar</a><a href="#stacked-column">Stacked column</a><a href="#heatmap">Heatmap</a><a href="#treemap">Treemap</a><a href="#treemap-square">Treemap, in order</a><a href="#sankey">Sankey</a><a href="#filter">Market filter</a><a href="#scatter">Scatter plot</a><a href="#dot-plot">Dot plot</a><a href="#slope">Slope</a><a href="#half-donut">Half donut</a><a href="#stats">Big numbers</a><a href="#stat-bar">Big number bar</a><a href="#bar-ranked">Bar, ranked</a><a href="#bar-groups">Bar, in groups</a><a href="#bar-groups-above">Bar, in groups, statement above</a><a href="#carousel">Charts with arrows</a><a href="#carousel-selector">Charts with a selector</a><a href="#styling">Inline styling</a></nav>
+<section class="howto" id="how-to"><h2>How to make a chart with Claude</h2>
+<ol>
+<li><b>Pick a chart.</b> Choose the type you want from the gallery below and note its name, for example "Bar, grouped" or "Slope".</li>
+<li><b>Open Claude with the GWI design system repo</b> and ask for the chart type you picked, naming it as it appears in the gallery.</li>
+<li><b>Give Claude the data</b> by pasting a table or attaching a CSV or Excel file. Also give the <b>Source</b>, the <b>Base</b> and the <b>questions</b> asked, each with its link. If anything is missing, Claude will ask.</li>
+<li><b>Check what Claude returns.</b> You get one <code>&lt;gwi-chart&gt;</code> tag, like the example below. Check the numbers, title and subtitle, and ask Claude to change the data or wording until they are right. The look follows the design system. Ask for content changes, or for a styling override (see Inline styling below).</li>
+<li><b>Paste it into Webflow.</b> On the report page, add a Code Embed and paste the whole tag. Do not add any other script.</li>
+</ol>
+<details class="hcode"><summary>Example embed code</summary><pre><code>&lt;gwi-chart type=&quot;bar&quot; unit=&quot;%&quot; highlight=&quot;Short-form video&quot;
+  title=&quot;This is the title, please change accordingly&quot;
+  subtitle=&quot;This is a placeholder subtitle, please change accordingly&quot;
+  source=&quot;GWI Core, Q2 2026&quot;
+  base=&quot;Online adults 16 to 64&quot;
+  source-url=&quot;https://example.com/core&quot;
+  question=&quot;Q4. Which of the following do you use weekly?&quot;
+  question-url=&quot;https://example.com/q4&quot;&gt;
+  &lt;script type=&quot;application/json&quot;&gt;
+  {
+    &quot;categories&quot;: [
+      &quot;Short-form video&quot;,
+      &quot;Social networks&quot;,
+      &quot;Messaging&quot;,
+      &quot;Streaming&quot;,
+      &quot;Podcasts&quot;,
+      &quot;Gaming&quot;
+    ],
+    &quot;series&quot;: [
+      {
+        &quot;name&quot;: &quot;Weekly use&quot;,
+        &quot;values&quot;: [
+          82,
+          74,
+          69,
+          58,
+          41,
+          37
+        ]
+      }
+    ]
+  }
+  &lt;/script&gt;
+&lt;/gwi-chart&gt;</code></pre></details>
+<p class="hint">Data from several markets or sectors (for example UK and US, or Financial and Tech)? Say so and Claude adds a drop-down filter to the chart. See "Market filter" below.</p></section>
+
+<section id="stat"><div class="demo"><div class="eyebrow">Big number and tiles</div><gwi-chart type="stat" title="Short-form video is part of daily life" subtitle="This is a placeholder subtitle, please change accordingly" source="Illustrative data, not real GWI figures" base="Online adults 16 to 64" source-url="https://example.com/core" question="Q4. Which of the following do you use weekly?" question-url="https://example.com/q4"><script type="application/json">{"value": "82%", "label": "of online adults use short-form video every week", "tiles": [{"label": "Daily short-form video use", "value": "47%", "delta": "+5 pts vs 2025", "trend": [33, 35, 36, 37, 38, 40, 41, 42, 43, 45, 46, 47]}, {"label": "Brand discovery on social", "value": "54%", "delta": "+3 pts vs 2025", "trend": [42, 44, 43, 46, 47, 48, 49, 50, 51, 52, 53, 54]}, {"label": "Daily time on streaming", "value": "2.4h", "delta": "+0.2h vs 2025", "trend": [1.9, 2.0, 2.0, 2.1, 2.1, 2.2, 2.2, 2.3, 2.3, 2.3, 2.4, 2.4]}]}</script></gwi-chart></div>
+<details><summary>Embed code</summary><p class="note">Webflow: paste only the <code>&lt;gwi-chart&gt;</code> tag below into a Code Embed. Keep the data script inside it, but do not add a script that loads the component. The site already does that.</p><div class="code"><button class="copy" type="button">Copy</button><pre><code>&lt;gwi-chart type=&quot;stat&quot;
+  title=&quot;This is the title, please change accordingly&quot;
+  subtitle=&quot;This is a placeholder subtitle, please change accordingly&quot;
+  source=&quot;GWI Core, Q2 2026&quot;
+  base=&quot;Online adults 16 to 64&quot;
+  source-url=&quot;https://example.com/core&quot;
+  question=&quot;Q4. Which of the following do you use weekly?&quot;
+  question-url=&quot;https://example.com/q4&quot;&gt;
+  &lt;script type=&quot;application/json&quot;&gt;
+  {
+    &quot;value&quot;: &quot;82%&quot;,
+    &quot;label&quot;: &quot;of online adults use short-form video every week&quot;,
+    &quot;tiles&quot;: [
+      {
+        &quot;label&quot;: &quot;Daily short-form video use&quot;,
+        &quot;value&quot;: &quot;47%&quot;,
+        &quot;delta&quot;: &quot;+5 pts vs 2025&quot;,
+        &quot;trend&quot;: [
+          33,
+          35,
+          36,
+          37,
+          38,
+          40,
+          41,
+          42,
+          43,
+          45,
+          46,
+          47
+        ]
+      },
+      {
+        &quot;label&quot;: &quot;Brand discovery on social&quot;,
+        &quot;value&quot;: &quot;54%&quot;,
+        &quot;delta&quot;: &quot;+3 pts vs 2025&quot;,
+        &quot;trend&quot;: [
+          42,
+          44,
+          43,
+          46,
+          47,
+          48,
+          49,
+          50,
+          51,
+          52,
+          53,
+          54
+        ]
+      },
+      {
+        &quot;label&quot;: &quot;Daily time on streaming&quot;,
+        &quot;value&quot;: &quot;2.4h&quot;,
+        &quot;delta&quot;: &quot;+0.2h vs 2025&quot;,
+        &quot;trend&quot;: [
+          1.9,
+          2.0,
+          2.0,
+          2.1,
+          2.1,
+          2.2,
+          2.2,
+          2.3,
+          2.3,
+          2.3,
+          2.4,
+          2.4
+        ]
+      }
+    ]
+  }
+  &lt;/script&gt;
+&lt;/gwi-chart&gt;</code></pre></div></details></section>
+<section id="bar-highlight"><div class="demo"><div class="eyebrow">Bar, highlighted</div><gwi-chart type="bar" unit="%" highlight="Short-form video" title="Short-form video leads weekly media use" subtitle="This is a placeholder subtitle, please change accordingly" source="Illustrative data, not real GWI figures" base="Online adults 16 to 64" source-url="https://example.com/core" question="Q4. Which of the following do you use weekly?" question-url="https://example.com/q4"><script type="application/json">{"categories": ["Short-form video", "Social networks", "Messaging", "Streaming", "Podcasts", "Gaming"], "series": [{"name": "Weekly use", "values": [82, 74, 69, 58, 41, 37]}]}</script></gwi-chart></div>
+<details><summary>Embed code</summary><p class="note">Webflow: paste only the <code>&lt;gwi-chart&gt;</code> tag below into a Code Embed. Keep the data script inside it, but do not add a script that loads the component. The site already does that.</p><div class="code"><button class="copy" type="button">Copy</button><pre><code>&lt;gwi-chart type=&quot;bar&quot; unit=&quot;%&quot; highlight=&quot;Short-form video&quot;
+  title=&quot;This is the title, please change accordingly&quot;
+  subtitle=&quot;This is a placeholder subtitle, please change accordingly&quot;
+  source=&quot;GWI Core, Q2 2026&quot;
+  base=&quot;Online adults 16 to 64&quot;
+  source-url=&quot;https://example.com/core&quot;
+  question=&quot;Q4. Which of the following do you use weekly?&quot;
+  question-url=&quot;https://example.com/q4&quot;&gt;
+  &lt;script type=&quot;application/json&quot;&gt;
+  {
+    &quot;categories&quot;: [
+      &quot;Short-form video&quot;,
+      &quot;Social networks&quot;,
+      &quot;Messaging&quot;,
+      &quot;Streaming&quot;,
+      &quot;Podcasts&quot;,
+      &quot;Gaming&quot;
+    ],
+    &quot;series&quot;: [
+      {
+        &quot;name&quot;: &quot;Weekly use&quot;,
+        &quot;values&quot;: [
+          82,
+          74,
+          69,
+          58,
+          41,
+          37
+        ]
+      }
+    ]
+  }
+  &lt;/script&gt;
+&lt;/gwi-chart&gt;</code></pre></div></details></section>
+<section id="bar-single"><div class="demo"><div class="eyebrow">Bar, one series</div><gwi-chart type="bar" unit="%" title="Millennials research before they buy" subtitle="This is a placeholder subtitle, please change accordingly" source="Illustrative data, not real GWI figures" base="Online adults 16 to 64" source-url="https://example.com/core" question="Q4. Which of the following do you use weekly?" question-url="https://example.com/q4"><script type="application/json">{"categories": ["Prefer to shop online", "Research before I buy", "Follow brands on social media", "Switch brands for a better deal", "Trust brands that share my values"], "series": [{"name": "Millennials", "values": [77, 69, 68, 66, 64]}]}</script></gwi-chart></div>
+<details><summary>Embed code</summary><p class="note">Webflow: paste only the <code>&lt;gwi-chart&gt;</code> tag below into a Code Embed. Keep the data script inside it, but do not add a script that loads the component. The site already does that.</p><div class="code"><button class="copy" type="button">Copy</button><pre><code>&lt;gwi-chart type=&quot;bar&quot; unit=&quot;%&quot;
+  title=&quot;This is the title, please change accordingly&quot;
+  subtitle=&quot;This is a placeholder subtitle, please change accordingly&quot;
+  source=&quot;GWI Core, Q2 2026&quot;
+  base=&quot;Online adults 16 to 64&quot;
+  source-url=&quot;https://example.com/core&quot;
+  question=&quot;Q4. Which of the following do you use weekly?&quot;
+  question-url=&quot;https://example.com/q4&quot;&gt;
+  &lt;script type=&quot;application/json&quot;&gt;
+  {
+    &quot;categories&quot;: [
+      &quot;Prefer to shop online&quot;,
+      &quot;Research before I buy&quot;,
+      &quot;Follow brands on social media&quot;,
+      &quot;Switch brands for a better deal&quot;,
+      &quot;Trust brands that share my values&quot;
+    ],
+    &quot;series&quot;: [
+      {
+        &quot;name&quot;: &quot;Millennials&quot;,
+        &quot;values&quot;: [
+          77,
+          69,
+          68,
+          66,
+          64
+        ]
+      }
+    ]
+  }
+  &lt;/script&gt;
+&lt;/gwi-chart&gt;</code></pre></div></details></section>
+<section id="bar-single-above"><div class="demo"><div class="eyebrow">Bar, one series, statement above</div><gwi-chart type="bar" labels="above" unit="%" title="Most leaders see AI pushing organisations towards the same answers" subtitle="This is a placeholder subtitle, please change accordingly" source="Illustrative data, not real GWI figures" base="Online adults 16 to 64"><script type="application/json">{"categories": ["Often produces similar recommendations for different organizations", "Insights reflect consensus, not competitive advantage", "Organisations base decisions on increasingly similar information", "Harder to develop insights competitors can’t easily access"], "series": [{"name": "Share who agree", "values": [77, 76, 75, 69]}]}</script></gwi-chart></div>
+<details><summary>Embed code</summary><p class="note"><code>labels="above"</code> puts each statement (up to three lines) above its bar, and the bar runs the full width of the chart. Add <code>ranked</code> if you want numbered badges.</p><div class="code"><button class="copy" type="button">Copy</button><pre><code>&lt;gwi-chart
+  type=&quot;bar&quot;
+  labels=&quot;above&quot;
+  unit=&quot;%&quot;
+  title=&quot;Most leaders see AI pushing organisations towards the same answers&quot;
+  subtitle=&quot;This is a placeholder subtitle, please change accordingly&quot;
+  source=&quot;Illustrative data, not real GWI figures&quot;
+  base=&quot;Online adults 16 to 64&quot;&gt;
+  &lt;script type=&quot;application/json&quot;&gt;
+  {
+    &quot;categories&quot;: [
+      &quot;Often produces similar recommendations for different organizations&quot;,
+      &quot;Insights reflect consensus, not competitive advantage&quot;,
+      &quot;Organisations base decisions on increasingly similar information&quot;,
+      &quot;Harder to develop insights competitors can’t easily access&quot;
+    ],
+    &quot;series&quot;: [
+      {
+        &quot;name&quot;: &quot;Share who agree&quot;,
+        &quot;values&quot;: [
+          77,
+          76,
+          75,
+          69
+        ]
+      }
+    ]
+  }
+  &lt;/script&gt;
+&lt;/gwi-chart&gt;</code></pre></div></details></section>
+<section id="bar-grouped"><div class="demo"><div class="eyebrow">Bar, grouped</div><gwi-chart type="bar" unit="%" title="Attitudes to shopping differ by generation" subtitle="This is a placeholder subtitle, please change accordingly" source="Illustrative data, not real GWI figures" base="Online adults 16 to 64" source-url="https://example.com/core" question="Q4. Which of the following do you use weekly?" question-url="https://example.com/q4"><script type="application/json">{"categories": ["Trust brands that share my values", "Research before I buy", "Prefer to shop online"], "series": [{"name": "Gen Z", "values": [72, 58, 81]}, {"name": "Millennials", "values": [64, 69, 77]}, {"name": "Gen X", "values": [51, 74, 63]}, {"name": "Boomers", "values": [43, 66, 46]}]}</script></gwi-chart></div>
+<details><summary>Embed code</summary><p class="note">Webflow: paste only the <code>&lt;gwi-chart&gt;</code> tag below into a Code Embed. Keep the data script inside it, but do not add a script that loads the component. The site already does that.</p><div class="code"><button class="copy" type="button">Copy</button><pre><code>&lt;gwi-chart type=&quot;bar&quot; unit=&quot;%&quot;
+  title=&quot;This is the title, please change accordingly&quot;
+  subtitle=&quot;This is a placeholder subtitle, please change accordingly&quot;
+  source=&quot;GWI Core, Q2 2026&quot;
+  base=&quot;Online adults 16 to 64&quot;
+  source-url=&quot;https://example.com/core&quot;
+  question=&quot;Q4. Which of the following do you use weekly?&quot;
+  question-url=&quot;https://example.com/q4&quot;&gt;
+  &lt;script type=&quot;application/json&quot;&gt;
+  {
+    &quot;categories&quot;: [
+      &quot;Trust brands that share my values&quot;,
+      &quot;Research before I buy&quot;,
+      &quot;Prefer to shop online&quot;
+    ],
+    &quot;series&quot;: [
+      {
+        &quot;name&quot;: &quot;Gen Z&quot;,
+        &quot;values&quot;: [
+          72,
+          58,
+          81
+        ]
+      },
+      {
+        &quot;name&quot;: &quot;Millennials&quot;,
+        &quot;values&quot;: [
+          64,
+          69,
+          77
+        ]
+      },
+      {
+        &quot;name&quot;: &quot;Gen X&quot;,
+        &quot;values&quot;: [
+          51,
+          74,
+          63
+        ]
+      },
+      {
+        &quot;name&quot;: &quot;Boomers&quot;,
+        &quot;values&quot;: [
+          43,
+          66,
+          46
+        ]
+      }
+    ]
+  }
+  &lt;/script&gt;
+&lt;/gwi-chart&gt;</code></pre></div></details></section>
+<section id="column"><div class="demo"><div class="eyebrow">Column</div><gwi-chart type="column" unit="%" title="Attitudes to shopping differ by generation" subtitle="This is a placeholder subtitle, please change accordingly" source="Illustrative data, not real GWI figures" base="Online adults 16 to 64" source-url="https://example.com/core" question="Q4. Which of the following do you use weekly?" question-url="https://example.com/q4"><script type="application/json">{"categories": ["Trust brands that share my values", "Research before I buy", "Prefer to shop online", "Follow brands on social media", "Switch brands for a better deal"], "series": [{"name": "Gen Z", "values": [72, 58, 81, 76, 62]}, {"name": "Millennials", "values": [64, 69, 77, 68, 66]}, {"name": "Gen X", "values": [51, 74, 63, 44, 71]}, {"name": "Boomers", "values": [43, 66, 46, 29, 58]}]}</script></gwi-chart></div>
+<details><summary>Embed code</summary><p class="note">Webflow: paste only the <code>&lt;gwi-chart&gt;</code> tag below into a Code Embed. Keep the data script inside it, but do not add a script that loads the component. The site already does that.</p><div class="code"><button class="copy" type="button">Copy</button><pre><code>&lt;gwi-chart type=&quot;column&quot; unit=&quot;%&quot;
+  title=&quot;This is the title, please change accordingly&quot;
+  subtitle=&quot;This is a placeholder subtitle, please change accordingly&quot;
+  source=&quot;GWI Core, Q2 2026&quot;
+  base=&quot;Online adults 16 to 64&quot;
+  source-url=&quot;https://example.com/core&quot;
+  question=&quot;Q4. Which of the following do you use weekly?&quot;
+  question-url=&quot;https://example.com/q4&quot;&gt;
+  &lt;script type=&quot;application/json&quot;&gt;
+  {
+    &quot;categories&quot;: [
+      &quot;Trust brands that share my values&quot;,
+      &quot;Research before I buy&quot;,
+      &quot;Prefer to shop online&quot;,
+      &quot;Follow brands on social media&quot;,
+      &quot;Switch brands for a better deal&quot;
+    ],
+    &quot;series&quot;: [
+      {
+        &quot;name&quot;: &quot;Gen Z&quot;,
+        &quot;values&quot;: [
+          72,
+          58,
+          81,
+          76,
+          62
+        ]
+      },
+      {
+        &quot;name&quot;: &quot;Millennials&quot;,
+        &quot;values&quot;: [
+          64,
+          69,
+          77,
+          68,
+          66
+        ]
+      },
+      {
+        &quot;name&quot;: &quot;Gen X&quot;,
+        &quot;values&quot;: [
+          51,
+          74,
+          63,
+          44,
+          71
+        ]
+      },
+      {
+        &quot;name&quot;: &quot;Boomers&quot;,
+        &quot;values&quot;: [
+          43,
+          66,
+          46,
+          29,
+          58
+        ]
+      }
+    ]
+  }
+  &lt;/script&gt;
+&lt;/gwi-chart&gt;</code></pre></div></details></section>
+<section id="column-single"><div class="demo"><div class="eyebrow">Column, one series</div><gwi-chart type="column" unit="%" title="Daily social media use falls with every older generation" subtitle="This is a placeholder subtitle, please change accordingly" source="Illustrative data, not real GWI figures" base="Online adults 16 to 64" source-url="https://example.com/core" question="Q4. Which of the following do you use weekly?" question-url="https://example.com/q4"><script type="application/json">{"categories": ["Gen Z", "Millennials", "Gen X", "Baby boomers", "Silent generation"], "series": [{"name": "Daily social media use", "values": [72, 64, 51, 38, 22]}]}</script></gwi-chart></div>
+<details><summary>Embed code</summary><p class="note">Webflow: paste only the <code>&lt;gwi-chart&gt;</code> tag below into a Code Embed. Keep the data script inside it, but do not add a script that loads the component. The site already does that.</p><div class="code"><button class="copy" type="button">Copy</button><pre><code>&lt;gwi-chart type=&quot;column&quot; unit=&quot;%&quot;
+  title=&quot;This is the title, please change accordingly&quot;
+  subtitle=&quot;This is a placeholder subtitle, please change accordingly&quot;
+  source=&quot;GWI Core, Q2 2026&quot;
+  base=&quot;Online adults 16 to 64&quot;
+  source-url=&quot;https://example.com/core&quot;
+  question=&quot;Q4. Which of the following do you use weekly?&quot;
+  question-url=&quot;https://example.com/q4&quot;&gt;
+  &lt;script type=&quot;application/json&quot;&gt;
+  {
+    &quot;categories&quot;: [
+      &quot;Gen Z&quot;,
+      &quot;Millennials&quot;,
+      &quot;Gen X&quot;,
+      &quot;Baby boomers&quot;,
+      &quot;Silent generation&quot;
+    ],
+    &quot;series&quot;: [
+      {
+        &quot;name&quot;: &quot;Daily social media use&quot;,
+        &quot;values&quot;: [
+          72,
+          64,
+          51,
+          38,
+          22
+        ]
+      }
+    ]
+  }
+  &lt;/script&gt;
+&lt;/gwi-chart&gt;</code></pre></div></details></section>
+<section id="column-wide"><div class="demo"><div class="eyebrow">Column, one series, wide columns</div><gwi-chart type="column" columns="wide" unit="%" title="Daily social media use falls with every older generation" subtitle="This is a placeholder subtitle, please change accordingly" source="Illustrative data, not real GWI figures" base="Online adults 16 to 64" source-url="https://example.com/core" question="Q4. Which of the following do you use weekly?" question-url="https://example.com/q4"><script type="application/json">{"categories": ["Gen Z", "Millennials", "Gen X", "Baby boomers", "Silent generation"], "series": [{"name": "Daily social media use", "values": [72, 64, 51, 38, 22]}]}</script></gwi-chart></div>
+<details><summary>Embed code</summary><p class="note">Add <code>columns="wide"</code> to a one series column chart and each column is as wide as its cell, minus a 30px gap.</p><div class="code"><button class="copy" type="button">Copy</button><pre><code>&lt;gwi-chart type=&quot;column&quot; columns=&quot;wide&quot; unit=&quot;%&quot;
+  title=&quot;This is the title, please change accordingly&quot;
+  subtitle=&quot;This is a placeholder subtitle, please change accordingly&quot;
+  source=&quot;GWI Core, Q2 2026&quot;
+  base=&quot;Online adults 16 to 64&quot;
+  source-url=&quot;https://example.com/core&quot;
+  question=&quot;Q4. Which of the following do you use weekly?&quot;
+  question-url=&quot;https://example.com/q4&quot;&gt;
+  &lt;script type=&quot;application/json&quot;&gt;
+  {
+    &quot;categories&quot;: [
+      &quot;Gen Z&quot;,
+      &quot;Millennials&quot;,
+      &quot;Gen X&quot;,
+      &quot;Baby boomers&quot;,
+      &quot;Silent generation&quot;
+    ],
+    &quot;series&quot;: [
+      {
+        &quot;name&quot;: &quot;Daily social media use&quot;,
+        &quot;values&quot;: [
+          72,
+          64,
+          51,
+          38,
+          22
+        ]
+      }
+    ]
+  }
+  &lt;/script&gt;
+&lt;/gwi-chart&gt;</code></pre></div></details></section>
+
+<section id="line"><div class="demo"><div class="eyebrow">Line</div><gwi-chart type="line" unit="%" title="Short-form video has overtaken live TV" subtitle="This is a placeholder subtitle, please change accordingly" source="Illustrative data, not real GWI figures" base="Online adults 16 to 64" source-url="https://example.com/core" question="Q4. Which of the following do you use weekly?" question-url="https://example.com/q4"><script type="application/json">{"categories": ["2019", "2020", "2021", "2022", "2023", "2024", "2025", "2026"], "series": [{"name": "Short-form video", "values": [26, 38, 35, 52, 49, 66, 63, 82]}, {"name": "Long-form video", "values": [62, 67, 58, 64, 55, 60, 53, 56]}, {"name": "Live TV", "values": [70, 62, 67, 52, 56, 41, 44, 32]}]}</script></gwi-chart></div>
+<details><summary>Embed code</summary><p class="note">Webflow: paste only the <code>&lt;gwi-chart&gt;</code> tag below into a Code Embed. Keep the data script inside it, but do not add a script that loads the component. The site already does that.</p><div class="code"><button class="copy" type="button">Copy</button><pre><code>&lt;gwi-chart type=&quot;line&quot; unit=&quot;%&quot;
+  title=&quot;This is the title, please change accordingly&quot;
+  subtitle=&quot;This is a placeholder subtitle, please change accordingly&quot;
+  source=&quot;GWI Core, Q2 2026&quot;
+  base=&quot;Online adults 16 to 64&quot;
+  source-url=&quot;https://example.com/core&quot;
+  question=&quot;Q4. Which of the following do you use weekly?&quot;
+  question-url=&quot;https://example.com/q4&quot;&gt;
+  &lt;script type=&quot;application/json&quot;&gt;
+  {
+    &quot;categories&quot;: [
+      &quot;2019&quot;,
+      &quot;2020&quot;,
+      &quot;2021&quot;,
+      &quot;2022&quot;,
+      &quot;2023&quot;,
+      &quot;2024&quot;,
+      &quot;2025&quot;,
+      &quot;2026&quot;
+    ],
+    &quot;series&quot;: [
+      {
+        &quot;name&quot;: &quot;Short-form video&quot;,
+        &quot;values&quot;: [
+          26,
+          38,
+          35,
+          52,
+          49,
+          66,
+          63,
+          82
+        ]
+      },
+      {
+        &quot;name&quot;: &quot;Long-form video&quot;,
+        &quot;values&quot;: [
+          62,
+          67,
+          58,
+          64,
+          55,
+          60,
+          53,
+          56
+        ]
+      },
+      {
+        &quot;name&quot;: &quot;Live TV&quot;,
+        &quot;values&quot;: [
+          70,
+          62,
+          67,
+          52,
+          56,
+          41,
+          44,
+          32
+        ]
+      }
+    ]
+  }
+  &lt;/script&gt;
+&lt;/gwi-chart&gt;</code></pre></div></details></section>
+<section id="area"><div class="demo"><div class="eyebrow">Area</div><gwi-chart type="area" unit="%" title="Short-form video use keeps growing" subtitle="This is a placeholder subtitle, please change accordingly" source="Illustrative data, not real GWI figures" base="Online adults 16 to 64" source-url="https://example.com/core" question="Q4. Which of the following do you use weekly?" question-url="https://example.com/q4"><script type="application/json">{"categories": ["2019", "2020", "2021", "2022", "2023", "2024", "2025", "2026"], "series": [{"name": "Short-form video", "values": [28, 43, 37, 58, 51, 72, 66, 82]}]}</script></gwi-chart></div>
+<details><summary>Embed code</summary><p class="note">Webflow: paste only the <code>&lt;gwi-chart&gt;</code> tag below into a Code Embed. Keep the data script inside it, but do not add a script that loads the component. The site already does that.</p><div class="code"><button class="copy" type="button">Copy</button><pre><code>&lt;gwi-chart type=&quot;area&quot; unit=&quot;%&quot;
+  title=&quot;This is the title, please change accordingly&quot;
+  subtitle=&quot;This is a placeholder subtitle, please change accordingly&quot;
+  source=&quot;GWI Core, Q2 2026&quot;
+  base=&quot;Online adults 16 to 64&quot;
+  source-url=&quot;https://example.com/core&quot;
+  question=&quot;Q4. Which of the following do you use weekly?&quot;
+  question-url=&quot;https://example.com/q4&quot;&gt;
+  &lt;script type=&quot;application/json&quot;&gt;
+  {
+    &quot;categories&quot;: [
+      &quot;2019&quot;,
+      &quot;2020&quot;,
+      &quot;2021&quot;,
+      &quot;2022&quot;,
+      &quot;2023&quot;,
+      &quot;2024&quot;,
+      &quot;2025&quot;,
+      &quot;2026&quot;
+    ],
+    &quot;series&quot;: [
+      {
+        &quot;name&quot;: &quot;Short-form video&quot;,
+        &quot;values&quot;: [
+          28,
+          43,
+          37,
+          58,
+          51,
+          72,
+          66,
+          82
+        ]
+      }
+    ]
+  }
+  &lt;/script&gt;
+&lt;/gwi-chart&gt;</code></pre></div></details></section>
+<section id="stacked-area"><div class="demo"><div class="eyebrow">Stacked area</div><gwi-chart type="stacked-area" unit="h" title="Mobile now drives most daily time online" subtitle="This is a placeholder subtitle, please change accordingly" source="Illustrative data, not real GWI figures" base="Online adults 16 to 64" source-url="https://example.com/core" question="Q4. Which of the following do you use weekly?" question-url="https://example.com/q4"><script type="application/json">{"categories": ["2019", "2020", "2021", "2022", "2023", "2024", "2025", "2026"], "series": [{"name": "Mobile", "values": [2.0, 2.9, 2.5, 3.7, 3.4, 4.7, 4.4, 5.6]}, {"name": "Desktop", "values": [3.6, 3.1, 3.9, 2.9, 3.6, 2.6, 3.1, 2.3]}]}</script></gwi-chart></div>
+<details><summary>Embed code</summary><p class="note">Webflow: paste only the <code>&lt;gwi-chart&gt;</code> tag below into a Code Embed. Keep the data script inside it, but do not add a script that loads the component. The site already does that.</p><div class="code"><button class="copy" type="button">Copy</button><pre><code>&lt;gwi-chart type=&quot;stacked-area&quot; unit=&quot;h&quot;
+  title=&quot;This is the title, please change accordingly&quot;
+  subtitle=&quot;This is a placeholder subtitle, please change accordingly&quot;
+  source=&quot;GWI Core, Q2 2026&quot;
+  base=&quot;Online adults 16 to 64&quot;
+  source-url=&quot;https://example.com/core&quot;
+  question=&quot;Q4. Which of the following do you use weekly?&quot;
+  question-url=&quot;https://example.com/q4&quot;&gt;
+  &lt;script type=&quot;application/json&quot;&gt;
+  {
+    &quot;categories&quot;: [
+      &quot;2019&quot;,
+      &quot;2020&quot;,
+      &quot;2021&quot;,
+      &quot;2022&quot;,
+      &quot;2023&quot;,
+      &quot;2024&quot;,
+      &quot;2025&quot;,
+      &quot;2026&quot;
+    ],
+    &quot;series&quot;: [
+      {
+        &quot;name&quot;: &quot;Mobile&quot;,
+        &quot;values&quot;: [
+          2.0,
+          2.9,
+          2.5,
+          3.7,
+          3.4,
+          4.7,
+          4.4,
+          5.6
+        ]
+      },
+      {
+        &quot;name&quot;: &quot;Desktop&quot;,
+        &quot;values&quot;: [
+          3.6,
+          3.1,
+          3.9,
+          2.9,
+          3.6,
+          2.6,
+          3.1,
+          2.3
+        ]
+      }
+    ]
+  }
+  &lt;/script&gt;
+&lt;/gwi-chart&gt;</code></pre></div></details></section>
+<section id="stacked-bar"><div class="demo"><div class="eyebrow">Stacked bar</div><gwi-chart type="stacked-bar" unit="%" title="Where each age group finds new brands" subtitle="This is a placeholder subtitle, please change accordingly" source="Illustrative data, not real GWI figures" base="Online adults 16 to 64" source-url="https://example.com/core" question="Q4. Which of the following do you use weekly?" question-url="https://example.com/q4"><script type="application/json">{"categories": ["16 to 24", "25 to 34", "35 to 44", "45 to 54"], "series": [{"name": "Social media", "values": [38, 33, 26, 20]}, {"name": "Search", "values": [17, 26, 32, 38]}, {"name": "Streaming", "values": [27, 23, 21, 18]}, {"name": "Other", "values": [18, 18, 21, 24]}]}</script></gwi-chart></div>
+<details><summary>Embed code</summary><p class="note">Webflow: paste only the <code>&lt;gwi-chart&gt;</code> tag below into a Code Embed. Keep the data script inside it, but do not add a script that loads the component. The site already does that.</p><div class="code"><button class="copy" type="button">Copy</button><pre><code>&lt;gwi-chart type=&quot;stacked-bar&quot; unit=&quot;%&quot;
+  title=&quot;This is the title, please change accordingly&quot;
+  subtitle=&quot;This is a placeholder subtitle, please change accordingly&quot;
+  source=&quot;GWI Core, Q2 2026&quot;
+  base=&quot;Online adults 16 to 64&quot;
+  source-url=&quot;https://example.com/core&quot;
+  question=&quot;Q4. Which of the following do you use weekly?&quot;
+  question-url=&quot;https://example.com/q4&quot;&gt;
+  &lt;script type=&quot;application/json&quot;&gt;
+  {
+    &quot;categories&quot;: [
+      &quot;16 to 24&quot;,
+      &quot;25 to 34&quot;,
+      &quot;35 to 44&quot;,
+      &quot;45 to 54&quot;
+    ],
+    &quot;series&quot;: [
+      {
+        &quot;name&quot;: &quot;Social media&quot;,
+        &quot;values&quot;: [
+          38,
+          33,
+          26,
+          20
+        ]
+      },
+      {
+        &quot;name&quot;: &quot;Search&quot;,
+        &quot;values&quot;: [
+          17,
+          26,
+          32,
+          38
+        ]
+      },
+      {
+        &quot;name&quot;: &quot;Streaming&quot;,
+        &quot;values&quot;: [
+          27,
+          23,
+          21,
+          18
+        ]
+      },
+      {
+        &quot;name&quot;: &quot;Other&quot;,
+        &quot;values&quot;: [
+          18,
+          18,
+          21,
+          24
+        ]
+      }
+    ]
+  }
+  &lt;/script&gt;
+&lt;/gwi-chart&gt;</code></pre></div></details></section>
+<section id="stacked-column"><div class="demo"><div class="eyebrow">Stacked column</div><gwi-chart type="stacked-column" unit="%" title="Search takes over from social media as people get older" subtitle="This is a placeholder subtitle, please change accordingly" source="Illustrative data, not real GWI figures" base="Online adults 16 to 64" source-url="https://example.com/core" question="Q4. Which of the following do you use weekly?" question-url="https://example.com/q4"><script type="application/json">{"categories": ["Gen Z", "Millennials", "Gen X", "Baby boomers"], "series": [{"name": "Social media", "values": [38, 33, 26, 20]}, {"name": "Search", "values": [17, 26, 32, 38]}, {"name": "Streaming", "values": [27, 23, 21, 18]}, {"name": "Other", "values": [18, 18, 21, 24]}]}</script></gwi-chart></div>
+<details><summary>Embed code</summary><p class="note">Webflow: paste only the <code>&lt;gwi-chart&gt;</code> tag below into a Code Embed. Keep the data script inside it, but do not add a script that loads the component. The site already does that.</p><div class="code"><button class="copy" type="button">Copy</button><pre><code>&lt;gwi-chart type=&quot;stacked-column&quot; unit=&quot;%&quot;
+  title=&quot;This is the title, please change accordingly&quot;
+  subtitle=&quot;This is a placeholder subtitle, please change accordingly&quot;
+  source=&quot;GWI Core, Q2 2026&quot;
+  base=&quot;Online adults 16 to 64&quot;
+  source-url=&quot;https://example.com/core&quot;
+  question=&quot;Q4. Which of the following do you use weekly?&quot;
+  question-url=&quot;https://example.com/q4&quot;&gt;
+  &lt;script type=&quot;application/json&quot;&gt;
+  {
+    &quot;categories&quot;: [
+      &quot;Gen Z&quot;,
+      &quot;Millennials&quot;,
+      &quot;Gen X&quot;,
+      &quot;Baby boomers&quot;
+    ],
+    &quot;series&quot;: [
+      {
+        &quot;name&quot;: &quot;Social media&quot;,
+        &quot;values&quot;: [
+          38,
+          33,
+          26,
+          20
+        ]
+      },
+      {
+        &quot;name&quot;: &quot;Search&quot;,
+        &quot;values&quot;: [
+          17,
+          26,
+          32,
+          38
+        ]
+      },
+      {
+        &quot;name&quot;: &quot;Streaming&quot;,
+        &quot;values&quot;: [
+          27,
+          23,
+          21,
+          18
+        ]
+      },
+      {
+        &quot;name&quot;: &quot;Other&quot;,
+        &quot;values&quot;: [
+          18,
+          18,
+          21,
+          24
+        ]
+      }
+    ]
+  }
+  &lt;/script&gt;
+&lt;/gwi-chart&gt;</code></pre></div></details></section>
+
+<section id="heatmap"><div class="demo"><div class="eyebrow">Heatmap</div><gwi-chart type="heatmap" unit="%" title="Younger adults use every media type more" subtitle="This is a placeholder subtitle, please change accordingly" source="Illustrative data, not real GWI figures" base="Online adults 16 to 64" source-url="https://example.com/core" question="Q4. Which of the following do you use weekly?" question-url="https://example.com/q4"><script type="application/json">{"categories": ["16 to 24", "25 to 34", "35 to 44", "45 to 54", "55 to 64"], "series": [{"name": "Video", "values": [92, 84, 71, 58, 41]}, {"name": "Social", "values": [85, 78, 66, 52, 38]}, {"name": "Messaging", "values": [88, 86, 79, 68, 57]}, {"name": "Streaming", "values": [71, 69, 62, 50, 39]}, {"name": "Podcasts", "values": [34, 48, 45, 37, 22]}]}</script></gwi-chart></div>
+<details><summary>Embed code</summary><p class="note">Webflow: paste only the <code>&lt;gwi-chart&gt;</code> tag below into a Code Embed. Keep the data script inside it, but do not add a script that loads the component. The site already does that.</p><div class="code"><button class="copy" type="button">Copy</button><pre><code>&lt;gwi-chart type=&quot;heatmap&quot; unit=&quot;%&quot;
+  title=&quot;This is the title, please change accordingly&quot;
+  subtitle=&quot;This is a placeholder subtitle, please change accordingly&quot;
+  source=&quot;GWI Core, Q2 2026&quot;
+  base=&quot;Online adults 16 to 64&quot;
+  source-url=&quot;https://example.com/core&quot;
+  question=&quot;Q4. Which of the following do you use weekly?&quot;
+  question-url=&quot;https://example.com/q4&quot;&gt;
+  &lt;script type=&quot;application/json&quot;&gt;
+  {
+    &quot;categories&quot;: [
+      &quot;16 to 24&quot;,
+      &quot;25 to 34&quot;,
+      &quot;35 to 44&quot;,
+      &quot;45 to 54&quot;,
+      &quot;55 to 64&quot;
+    ],
+    &quot;series&quot;: [
+      {
+        &quot;name&quot;: &quot;Video&quot;,
+        &quot;values&quot;: [
+          92,
+          84,
+          71,
+          58,
+          41
+        ]
+      },
+      {
+        &quot;name&quot;: &quot;Social&quot;,
+        &quot;values&quot;: [
+          85,
+          78,
+          66,
+          52,
+          38
+        ]
+      },
+      {
+        &quot;name&quot;: &quot;Messaging&quot;,
+        &quot;values&quot;: [
+          88,
+          86,
+          79,
+          68,
+          57
+        ]
+      },
+      {
+        &quot;name&quot;: &quot;Streaming&quot;,
+        &quot;values&quot;: [
+          71,
+          69,
+          62,
+          50,
+          39
+        ]
+      },
+      {
+        &quot;name&quot;: &quot;Podcasts&quot;,
+        &quot;values&quot;: [
+          34,
+          48,
+          45,
+          37,
+          22
+        ]
+      }
+    ]
+  }
+  &lt;/script&gt;
+&lt;/gwi-chart&gt;</code></pre></div></details></section>
+<section id="treemap"><div class="demo"><div class="eyebrow">Treemap</div><gwi-chart type="treemap" unit="%" title="Short-form video takes a third of media time" subtitle="This is a placeholder subtitle, please change accordingly" source="Illustrative data, not real GWI figures" base="Online adults 16 to 64" source-url="https://example.com/core" question="Q4. Which of the following do you use weekly?" question-url="https://example.com/q4"><script type="application/json">{"items": [{"name": "Short-form video", "value": 34}, {"name": "Social networks", "value": 22}, {"name": "Streaming", "value": 18}, {"name": "Messaging", "value": 14}, {"name": "Gaming", "value": 12}], "seriesName": "Share of time"}</script></gwi-chart></div>
+<details><summary>Embed code</summary><p class="note">Webflow: paste only the <code>&lt;gwi-chart&gt;</code> tag below into a Code Embed. Keep the data script inside it, but do not add a script that loads the component. The site already does that.</p><div class="code"><button class="copy" type="button">Copy</button><pre><code>&lt;gwi-chart type=&quot;treemap&quot; unit=&quot;%&quot;
+  title=&quot;This is the title, please change accordingly&quot;
+  subtitle=&quot;This is a placeholder subtitle, please change accordingly&quot;
+  source=&quot;GWI Core, Q2 2026&quot;
+  base=&quot;Online adults 16 to 64&quot;
+  source-url=&quot;https://example.com/core&quot;
+  question=&quot;Q4. Which of the following do you use weekly?&quot;
+  question-url=&quot;https://example.com/q4&quot;&gt;
+  &lt;script type=&quot;application/json&quot;&gt;
+  {
+    &quot;items&quot;: [
+      {
+        &quot;name&quot;: &quot;Short-form video&quot;,
+        &quot;value&quot;: 34
+      },
+      {
+        &quot;name&quot;: &quot;Social networks&quot;,
+        &quot;value&quot;: 22
+      },
+      {
+        &quot;name&quot;: &quot;Streaming&quot;,
+        &quot;value&quot;: 18
+      },
+      {
+        &quot;name&quot;: &quot;Messaging&quot;,
+        &quot;value&quot;: 14
+      },
+      {
+        &quot;name&quot;: &quot;Gaming&quot;,
+        &quot;value&quot;: 12
+      }
+    ],
+    &quot;seriesName&quot;: &quot;Share of time&quot;
+  }
+  &lt;/script&gt;
+&lt;/gwi-chart&gt;</code></pre></div></details></section>
+<section id="treemap-square"><div class="demo"><div class="eyebrow">Treemap, tiles in the order given</div><gwi-chart type="treemap" layout="square" unit="%" title="Short-form video takes a third of media time" subtitle="This is a placeholder subtitle, please change accordingly" source="Illustrative data, not real GWI figures" base="Online adults 16 to 64" source-url="https://example.com/core" question="Q4. Which of the following do you use weekly?" question-url="https://example.com/q4"><script type="application/json">{"items": [{"name": "Short-form video", "value": 34}, {"name": "Social networks", "value": 22}, {"name": "Streaming", "value": 18}, {"name": "Messaging", "value": 14}, {"name": "Gaming", "value": 12}], "seriesName": "Share of time"}</script></gwi-chart></div>
+<details><summary>Embed code</summary><p class="note">Add <code>layout="square"</code> and the tiles are laid out in the order you give them, in a square, then stretched to the chart. Without it, tiles are sorted by size.</p><div class="code"><button class="copy" type="button">Copy</button><pre><code>&lt;gwi-chart type=&quot;treemap&quot; layout=&quot;square&quot; unit=&quot;%&quot;
+  title=&quot;This is the title, please change accordingly&quot;
+  subtitle=&quot;This is a placeholder subtitle, please change accordingly&quot;
+  source=&quot;GWI Core, Q2 2026&quot;
+  base=&quot;Online adults 16 to 64&quot;
+  source-url=&quot;https://example.com/core&quot;
+  question=&quot;Q4. Which of the following do you use weekly?&quot;
+  question-url=&quot;https://example.com/q4&quot;&gt;
+  &lt;script type=&quot;application/json&quot;&gt;
+  {
+    &quot;items&quot;: [
+      {
+        &quot;name&quot;: &quot;Short-form video&quot;,
+        &quot;value&quot;: 34
+      },
+      {
+        &quot;name&quot;: &quot;Social networks&quot;,
+        &quot;value&quot;: 22
+      },
+      {
+        &quot;name&quot;: &quot;Streaming&quot;,
+        &quot;value&quot;: 18
+      },
+      {
+        &quot;name&quot;: &quot;Messaging&quot;,
+        &quot;value&quot;: 14
+      },
+      {
+        &quot;name&quot;: &quot;Gaming&quot;,
+        &quot;value&quot;: 12
+      }
+    ],
+    &quot;seriesName&quot;: &quot;Share of time&quot;
+  }
+  &lt;/script&gt;
+&lt;/gwi-chart&gt;</code></pre></div></details></section>
+<section id="sankey"><div class="demo"><div class="eyebrow">Sankey</div><gwi-chart type="sankey" unit="%" title="Brand websites close the most sales" subtitle="This is a placeholder subtitle, please change accordingly" source="Illustrative data, not real GWI figures" base="Online adults 16 to 64" source-url="https://example.com/core" question="Q4. Which of the following do you use weekly?" question-url="https://example.com/q4"><script type="application/json">{"stages": ["Discover", "Research", "Buy"], "links": [{"source": "Social media", "target": "Video platforms", "value": 18}, {"source": "Social media", "target": "Brand websites", "value": 9}, {"source": "Social media", "target": "Review sites", "value": 5}, {"source": "Search engines", "target": "Review sites", "value": 14}, {"source": "Search engines", "target": "Brand websites", "value": 10}, {"source": "Search engines", "target": "Video platforms", "value": 4}, {"source": "Friends and family", "target": "Review sites", "value": 7}, {"source": "Friends and family", "target": "Brand websites", "value": 8}, {"source": "TV and streaming", "target": "Video platforms", "value": 6}, {"source": "TV and streaming", "target": "Brand websites", "value": 9}, {"source": "Video platforms", "target": "Online marketplace", "value": 15}, {"source": "Video platforms", "target": "In store", "value": 13}, {"source": "Review sites", "target": "Online marketplace", "value": 14}, {"source": "Review sites", "target": "In store", "value": 12}, {"source": "Brand websites", "target": "Brand website purchase", "value": 20}, {"source": "Brand websites", "target": "In store", "value": 9}, {"source": "Brand websites", "target": "Online marketplace", "value": 7}]}</script></gwi-chart></div>
+<details><summary>Embed code</summary><p class="note">Webflow: paste only the <code>&lt;gwi-chart&gt;</code> tag below into a Code Embed. Keep the data script inside it, but do not add a script that loads the component. The site already does that.</p><div class="code"><button class="copy" type="button">Copy</button><pre><code>&lt;gwi-chart type=&quot;sankey&quot; unit=&quot;%&quot;
+  title=&quot;This is the title, please change accordingly&quot;
+  subtitle=&quot;This is a placeholder subtitle, please change accordingly&quot;
+  source=&quot;GWI Core, Q2 2026&quot;
+  base=&quot;Online adults 16 to 64&quot;
+  source-url=&quot;https://example.com/core&quot;
+  question=&quot;Q4. Which of the following do you use weekly?&quot;
+  question-url=&quot;https://example.com/q4&quot;&gt;
+  &lt;script type=&quot;application/json&quot;&gt;
+  {
+    &quot;stages&quot;: [
+      &quot;Discover&quot;,
+      &quot;Research&quot;,
+      &quot;Buy&quot;
+    ],
+    &quot;links&quot;: [
+      {
+        &quot;source&quot;: &quot;Social media&quot;,
+        &quot;target&quot;: &quot;Video platforms&quot;,
+        &quot;value&quot;: 18
+      },
+      {
+        &quot;source&quot;: &quot;Social media&quot;,
+        &quot;target&quot;: &quot;Brand websites&quot;,
+        &quot;value&quot;: 9
+      },
+      {
+        &quot;source&quot;: &quot;Social media&quot;,
+        &quot;target&quot;: &quot;Review sites&quot;,
+        &quot;value&quot;: 5
+      },
+      {
+        &quot;source&quot;: &quot;Search engines&quot;,
+        &quot;target&quot;: &quot;Review sites&quot;,
+        &quot;value&quot;: 14
+      },
+      {
+        &quot;source&quot;: &quot;Search engines&quot;,
+        &quot;target&quot;: &quot;Brand websites&quot;,
+        &quot;value&quot;: 10
+      },
+      {
+        &quot;source&quot;: &quot;Search engines&quot;,
+        &quot;target&quot;: &quot;Video platforms&quot;,
+        &quot;value&quot;: 4
+      },
+      {
+        &quot;source&quot;: &quot;Friends and family&quot;,
+        &quot;target&quot;: &quot;Review sites&quot;,
+        &quot;value&quot;: 7
+      },
+      {
+        &quot;source&quot;: &quot;Friends and family&quot;,
+        &quot;target&quot;: &quot;Brand websites&quot;,
+        &quot;value&quot;: 8
+      },
+      {
+        &quot;source&quot;: &quot;TV and streaming&quot;,
+        &quot;target&quot;: &quot;Video platforms&quot;,
+        &quot;value&quot;: 6
+      },
+      {
+        &quot;source&quot;: &quot;TV and streaming&quot;,
+        &quot;target&quot;: &quot;Brand websites&quot;,
+        &quot;value&quot;: 9
+      },
+      {
+        &quot;source&quot;: &quot;Video platforms&quot;,
+        &quot;target&quot;: &quot;Online marketplace&quot;,
+        &quot;value&quot;: 15
+      },
+      {
+        &quot;source&quot;: &quot;Video platforms&quot;,
+        &quot;target&quot;: &quot;In store&quot;,
+        &quot;value&quot;: 13
+      },
+      {
+        &quot;source&quot;: &quot;Review sites&quot;,
+        &quot;target&quot;: &quot;Online marketplace&quot;,
+        &quot;value&quot;: 14
+      },
+      {
+        &quot;source&quot;: &quot;Review sites&quot;,
+        &quot;target&quot;: &quot;In store&quot;,
+        &quot;value&quot;: 12
+      },
+      {
+        &quot;source&quot;: &quot;Brand websites&quot;,
+        &quot;target&quot;: &quot;Brand website purchase&quot;,
+        &quot;value&quot;: 20
+      },
+      {
+        &quot;source&quot;: &quot;Brand websites&quot;,
+        &quot;target&quot;: &quot;In store&quot;,
+        &quot;value&quot;: 9
+      },
+      {
+        &quot;source&quot;: &quot;Brand websites&quot;,
+        &quot;target&quot;: &quot;Online marketplace&quot;,
+        &quot;value&quot;: 7
+      }
+    ]
+  }
+  &lt;/script&gt;
+&lt;/gwi-chart&gt;</code></pre></div></details></section>
+<section id="filter"><div class="demo"><div class="eyebrow">Market filter</div><gwi-chart type="bar" unit="%" title="Online shopping is strongest in the UK, whichever market you pick" subtitle="This is a placeholder subtitle, please change accordingly" source="Illustrative data, not real GWI figures" base="Online adults 16 to 64" source-url="https://example.com/core" question="Q4. Which of the following do you use weekly?" question-url="https://example.com/q4"><script type="application/json">{"filterLabel": "Market", "views": [{"name": "United Kingdom", "categories": ["Prefer to shop online", "Research before I buy", "Follow brands on social media", "Switch brands for a better deal", "Trust brands that share my values"], "series": [{"name": "Millennials", "values": [77, 70, 70, 69, 68]}]}, {"name": "United States", "categories": ["Prefer to shop online", "Research before I buy", "Follow brands on social media", "Switch brands for a better deal", "Trust brands that share my values"], "series": [{"name": "Millennials", "values": [65, 60, 60, 59, 58]}]}, {"name": "Germany", "categories": ["Prefer to shop online", "Research before I buy", "Follow brands on social media", "Switch brands for a better deal", "Trust brands that share my values"], "series": [{"name": "Millennials", "values": [54, 49, 50, 49, 49]}]}]}</script></gwi-chart></div>
+<details><summary>Embed code</summary><p class="note">Webflow: paste only the <code>&lt;gwi-chart&gt;</code> tag below into a Code Embed. Keep the data script inside it, but do not add a script that loads the component. The site already does that.</p><div class="code"><button class="copy" type="button">Copy</button><pre><code>&lt;gwi-chart type=&quot;bar&quot; unit=&quot;%&quot;
+  title=&quot;This is the title, please change accordingly&quot;
+  subtitle=&quot;This is a placeholder subtitle, please change accordingly&quot;
+  source=&quot;GWI Core, Q2 2026&quot;
+  base=&quot;Online adults 16 to 64&quot;
+  source-url=&quot;https://example.com/core&quot;
+  question=&quot;Q4. Which of the following do you use weekly?&quot;
+  question-url=&quot;https://example.com/q4&quot;&gt;
+  &lt;script type=&quot;application/json&quot;&gt;
+  {
+    &quot;filterLabel&quot;: &quot;Market&quot;,
+    &quot;views&quot;: [
+      {
+        &quot;name&quot;: &quot;United Kingdom&quot;,
+        &quot;categories&quot;: [
+          &quot;Prefer to shop online&quot;,
+          &quot;Research before I buy&quot;,
+          &quot;Follow brands on social media&quot;,
+          &quot;Switch brands for a better deal&quot;,
+          &quot;Trust brands that share my values&quot;
+        ],
+        &quot;series&quot;: [
+          {
+            &quot;name&quot;: &quot;Millennials&quot;,
+            &quot;values&quot;: [
+              77,
+              70,
+              70,
+              69,
+              68
+            ]
+          }
+        ]
+      },
+      {
+        &quot;name&quot;: &quot;United States&quot;,
+        &quot;categories&quot;: [
+          &quot;Prefer to shop online&quot;,
+          &quot;Research before I buy&quot;,
+          &quot;Follow brands on social media&quot;,
+          &quot;Switch brands for a better deal&quot;,
+          &quot;Trust brands that share my values&quot;
+        ],
+        &quot;series&quot;: [
+          {
+            &quot;name&quot;: &quot;Millennials&quot;,
+            &quot;values&quot;: [
+              65,
+              60,
+              60,
+              59,
+              58
+            ]
+          }
+        ]
+      },
+      {
+        &quot;name&quot;: &quot;Germany&quot;,
+        &quot;categories&quot;: [
+          &quot;Prefer to shop online&quot;,
+          &quot;Research before I buy&quot;,
+          &quot;Follow brands on social media&quot;,
+          &quot;Switch brands for a better deal&quot;,
+          &quot;Trust brands that share my values&quot;
+        ],
+        &quot;series&quot;: [
+          {
+            &quot;name&quot;: &quot;Millennials&quot;,
+            &quot;values&quot;: [
+              54,
+              49,
+              50,
+              49,
+              49
+            ]
+          }
+        ]
+      }
+    ]
+  }
+  &lt;/script&gt;
+&lt;/gwi-chart&gt;</code></pre></div></details></section>
+
+<section id="scatter"><div class="demo"><div class="eyebrow">Scatter plot</div><gwi-chart type="scatter" unit="%" title="Broadcast TV and social media lead on both reach and impact" subtitle="This is a placeholder subtitle, please change accordingly" source="Illustrative data, not real GWI figures" base="Online adults 16 to 64" source-url="https://example.com/core" question="Q4. Which of the following do you use weekly?" question-url="https://example.com/q4"><script type="application/json">{"xLabel": "Reach", "yLabel": "Impact", "points": [{"name": "Broadcast TV", "x": 92, "y": 33}, {"name": "Social media", "x": 92, "y": 28}, {"name": "Online TV", "x": 77, "y": 19}, {"name": "Music streaming", "x": 71, "y": 16}, {"name": "Online press", "x": 75, "y": 14}, {"name": "Radio", "x": 74, "y": 13}, {"name": "Physical press", "x": 71, "y": 12}, {"name": "Podcasts", "x": 61, "y": 11}]}</script></gwi-chart></div>
+<details><summary>Embed code</summary><p class="note">Webflow: paste only the <code>&lt;gwi-chart&gt;</code> tag below into a Code Embed. Keep the data script inside it, but do not add a script that loads the component. The site already does that.</p><div class="code"><button class="copy" type="button">Copy</button><pre><code>&lt;gwi-chart type=&quot;scatter&quot; unit=&quot;%&quot;
+  title=&quot;This is the title, please change accordingly&quot;
+  subtitle=&quot;This is a placeholder subtitle, please change accordingly&quot;
+  source=&quot;GWI Core, Q2 2026&quot;
+  base=&quot;Online adults 16 to 64&quot;
+  source-url=&quot;https://example.com/core&quot;
+  question=&quot;Q4. Which of the following do you use weekly?&quot;
+  question-url=&quot;https://example.com/q4&quot;&gt;
+  &lt;script type=&quot;application/json&quot;&gt;
+  {
+    &quot;xLabel&quot;: &quot;Reach&quot;,
+    &quot;yLabel&quot;: &quot;Impact&quot;,
+    &quot;points&quot;: [
+      {
+        &quot;name&quot;: &quot;Broadcast TV&quot;,
+        &quot;x&quot;: 92,
+        &quot;y&quot;: 33
+      },
+      {
+        &quot;name&quot;: &quot;Social media&quot;,
+        &quot;x&quot;: 92,
+        &quot;y&quot;: 28
+      },
+      {
+        &quot;name&quot;: &quot;Online TV&quot;,
+        &quot;x&quot;: 77,
+        &quot;y&quot;: 19
+      },
+      {
+        &quot;name&quot;: &quot;Music streaming&quot;,
+        &quot;x&quot;: 71,
+        &quot;y&quot;: 16
+      },
+      {
+        &quot;name&quot;: &quot;Online press&quot;,
+        &quot;x&quot;: 75,
+        &quot;y&quot;: 14
+      },
+      {
+        &quot;name&quot;: &quot;Radio&quot;,
+        &quot;x&quot;: 74,
+        &quot;y&quot;: 13
+      },
+      {
+        &quot;name&quot;: &quot;Physical press&quot;,
+        &quot;x&quot;: 71,
+        &quot;y&quot;: 12
+      },
+      {
+        &quot;name&quot;: &quot;Podcasts&quot;,
+        &quot;x&quot;: 61,
+        &quot;y&quot;: 11
+      }
+    ]
+  }
+  &lt;/script&gt;
+&lt;/gwi-chart&gt;</code></pre></div></details></section>
+
+<section id="dot-plot"><div class="demo"><div class="eyebrow">Dot plot</div><gwi-chart type="dot-plot" unit="%" title="Most channels grew since 2024, but online press and radio lost ground" subtitle="This is a placeholder subtitle, please change accordingly" source="Illustrative data, not real GWI figures" base="Online adults 16 to 64" source-url="https://example.com/core" question="Q4. Which of the following do you use weekly?" question-url="https://example.com/q4"><script type="application/json">{"categories": ["Social media", "Streaming", "Online press", "Podcasts", "Radio", "Broadcast TV", "Gaming", "Music streaming", "Online video", "Messaging"], "series": [{"name": "2024", "values": [62, 58, 41, 28, 52, 60, 35, 49, 66, 71]}, {"name": "2026", "values": [71, 66, 35, 36, 44, 51, 42, 55, 74, 76]}]}</script></gwi-chart></div>
+<details><summary>Embed code</summary><p class="note">Webflow: paste only the <code>&lt;gwi-chart&gt;</code> tag below into a Code Embed. Keep the data script inside it, but do not add a script that loads the component. The site already does that.</p><div class="code"><button class="copy" type="button">Copy</button><pre><code>&lt;gwi-chart type=&quot;dot-plot&quot; unit=&quot;%&quot;
+  title=&quot;This is the title, please change accordingly&quot;
+  subtitle=&quot;This is a placeholder subtitle, please change accordingly&quot;
+  source=&quot;GWI Core, Q2 2026&quot;
+  base=&quot;Online adults 16 to 64&quot;
+  source-url=&quot;https://example.com/core&quot;
+  question=&quot;Q4. Which of the following do you use weekly?&quot;
+  question-url=&quot;https://example.com/q4&quot;&gt;
+  &lt;script type=&quot;application/json&quot;&gt;
+  {
+    &quot;categories&quot;: [
+      &quot;Social media&quot;,
+      &quot;Streaming&quot;,
+      &quot;Online press&quot;,
+      &quot;Podcasts&quot;,
+      &quot;Radio&quot;,
+      &quot;Broadcast TV&quot;,
+      &quot;Gaming&quot;,
+      &quot;Music streaming&quot;,
+      &quot;Online video&quot;,
+      &quot;Messaging&quot;
+    ],
+    &quot;series&quot;: [
+      {
+        &quot;name&quot;: &quot;2024&quot;,
+        &quot;values&quot;: [
+          62,
+          58,
+          41,
+          28,
+          52,
+          60,
+          35,
+          49,
+          66,
+          71
+        ]
+      },
+      {
+        &quot;name&quot;: &quot;2026&quot;,
+        &quot;values&quot;: [
+          71,
+          66,
+          35,
+          36,
+          44,
+          51,
+          42,
+          55,
+          74,
+          76
+        ]
+      }
+    ]
+  }
+  &lt;/script&gt;
+&lt;/gwi-chart&gt;</code></pre></div></details></section>
+
+<section id="slope"><div class="demo"><div class="eyebrow">Slope</div><gwi-chart type="slope" unit="%" title="Streaming and podcasts gained while online press and radio fell" subtitle="This is a placeholder subtitle, please change accordingly" source="Illustrative data, not real GWI figures" base="Online adults 16 to 64" source-url="https://example.com/core" question="Q4. Which of the following do you use weekly?" question-url="https://example.com/q4"><script type="application/json">{"categories": ["Social media", "Streaming", "Podcasts", "Online press", "Radio", "Broadcast TV", "Gaming", "Music streaming", "Online video", "Messaging", "Search", "Email"], "series": [{"name": "2024", "values": [78, 64, 28, 41, 52, 60, 35, 49, 66, 71, 83, 57]}, {"name": "2026", "values": [81, 72, 36, 35, 44, 51, 42, 55, 74, 76, 80, 49]}]}</script></gwi-chart></div>
+<details><summary>Embed code</summary><p class="note">Webflow: paste only the <code>&lt;gwi-chart&gt;</code> tag below into a Code Embed. Keep the data script inside it, but do not add a script that loads the component. The site already does that.</p><div class="code"><button class="copy" type="button">Copy</button><pre><code>&lt;gwi-chart type=&quot;slope&quot; unit=&quot;%&quot;
+  title=&quot;This is the title, please change accordingly&quot;
+  subtitle=&quot;This is a placeholder subtitle, please change accordingly&quot;
+  source=&quot;GWI Core, Q2 2026&quot;
+  base=&quot;Online adults 16 to 64&quot;
+  source-url=&quot;https://example.com/core&quot;
+  question=&quot;Q4. Which of the following do you use weekly?&quot;
+  question-url=&quot;https://example.com/q4&quot;&gt;
+  &lt;script type=&quot;application/json&quot;&gt;
+  {
+    &quot;categories&quot;: [
+      &quot;Social media&quot;,
+      &quot;Streaming&quot;,
+      &quot;Podcasts&quot;,
+      &quot;Online press&quot;,
+      &quot;Radio&quot;,
+      &quot;Broadcast TV&quot;,
+      &quot;Gaming&quot;,
+      &quot;Music streaming&quot;,
+      &quot;Online video&quot;,
+      &quot;Messaging&quot;,
+      &quot;Search&quot;,
+      &quot;Email&quot;
+    ],
+    &quot;series&quot;: [
+      {
+        &quot;name&quot;: &quot;2024&quot;,
+        &quot;values&quot;: [
+          78,
+          64,
+          28,
+          41,
+          52,
+          60,
+          35,
+          49,
+          66,
+          71,
+          83,
+          57
+        ]
+      },
+      {
+        &quot;name&quot;: &quot;2026&quot;,
+        &quot;values&quot;: [
+          81,
+          72,
+          36,
+          35,
+          44,
+          51,
+          42,
+          55,
+          74,
+          76,
+          80,
+          49
+        ]
+      }
+    ]
+  }
+  &lt;/script&gt;
+&lt;/gwi-chart&gt;</code></pre></div></details></section>
+
+<section id="half-donut"><div class="demo"><div class="eyebrow">Half donut</div><gwi-chart type="half-donut" unit="%" title="Media time is led by short-form video" subtitle="This is a placeholder subtitle, please change accordingly" source="Illustrative data, not real GWI figures" base="Online adults 16 to 64" source-url="https://example.com/core" question="Q4. Which of the following do you use weekly?" question-url="https://example.com/q4"><script type="application/json">{"items": [{"name": "Short-form video", "value": 38}, {"name": "Social networks", "value": 27}, {"name": "Streaming", "value": 21}, {"name": "Podcasts", "value": 9}, {"name": "Other", "value": 5}], "seriesName": "Share of time"}</script></gwi-chart></div>
+<details><summary>Embed code</summary><p class="note">Webflow: paste only the <code>&lt;gwi-chart&gt;</code> tag below into a Code Embed. Keep the data script inside it, but do not add a script that loads the component. The site already does that.</p><div class="code"><button class="copy" type="button">Copy</button><pre><code>&lt;gwi-chart type=&quot;half-donut&quot; unit=&quot;%&quot;
+  title=&quot;This is the title, please change accordingly&quot;
+  subtitle=&quot;This is a placeholder subtitle, please change accordingly&quot;
+  source=&quot;GWI Core, Q2 2026&quot;
+  base=&quot;Online adults 16 to 64&quot;
+  source-url=&quot;https://example.com/core&quot;
+  question=&quot;Q4. Which of the following do you use weekly?&quot;
+  question-url=&quot;https://example.com/q4&quot;&gt;
+  &lt;script type=&quot;application/json&quot;&gt;
+  {
+    &quot;items&quot;: [
+      {
+        &quot;name&quot;: &quot;Short-form video&quot;,
+        &quot;value&quot;: 38
+      },
+      {
+        &quot;name&quot;: &quot;Social networks&quot;,
+        &quot;value&quot;: 27
+      },
+      {
+        &quot;name&quot;: &quot;Streaming&quot;,
+        &quot;value&quot;: 21
+      },
+      {
+        &quot;name&quot;: &quot;Podcasts&quot;,
+        &quot;value&quot;: 9
+      },
+      {
+        &quot;name&quot;: &quot;Other&quot;,
+        &quot;value&quot;: 5
+      }
+    ],
+    &quot;seriesName&quot;: &quot;Share of time&quot;
+  }
+  &lt;/script&gt;
+&lt;/gwi-chart&gt;</code></pre></div></details></section>
+
+<section id="stats"><div class="demo"><div class="eyebrow">Big numbers</div><gwi-chart type="stats" unit="%" title="Most leaders see AI pushing organisations towards the same answers" subtitle="This is a placeholder subtitle, please change accordingly" source="Illustrative data, not real GWI figures" base="Online adults 16 to 64"><script type="application/json">{"stats": [{"value": 77, "label": "often produces similar recommendations for different organizations"}, {"value": 76, "label": "insights often reflect consensus opinion rather than competitive advantage"}, {"value": 75, "label": "is causing organizations to base decisions on increasingly similar information"}, {"value": 69, "label": "is making it harder to develop insights that competitors cannot easily access"}]}</script></gwi-chart></div>
+<details><summary>Embed code</summary><p class="note">Webflow: paste only the <code>&lt;gwi-chart&gt;</code> tag below into a Code Embed. Keep the data script inside it, but do not add a script that loads the component. The site already does that.</p><div class="code"><button class="copy" type="button">Copy</button><pre><code>&lt;gwi-chart
+  type=&quot;stats&quot;
+  unit=&quot;%&quot;
+  title=&quot;Most leaders see AI pushing organisations towards the same answers&quot;
+  subtitle=&quot;This is a placeholder subtitle, please change accordingly&quot;
+  source=&quot;Illustrative data, not real GWI figures&quot;
+  base=&quot;Online adults 16 to 64&quot;&gt;
+  &lt;script type=&quot;application/json&quot;&gt;
+  {
+    &quot;stats&quot;: [
+      {
+        &quot;value&quot;: 77,
+        &quot;label&quot;: &quot;often produces similar recommendations for different organizations&quot;
+      },
+      {
+        &quot;value&quot;: 76,
+        &quot;label&quot;: &quot;insights often reflect consensus opinion rather than competitive advantage&quot;
+      },
+      {
+        &quot;value&quot;: 75,
+        &quot;label&quot;: &quot;is causing organizations to base decisions on increasingly similar information&quot;
+      },
+      {
+        &quot;value&quot;: 69,
+        &quot;label&quot;: &quot;is making it harder to develop insights that competitors cannot easily access&quot;
+      }
+    ]
+  }
+  &lt;/script&gt;
+&lt;/gwi-chart&gt;</code></pre></div></details></section>
+<section id="stat-bar"><div class="demo"><div class="eyebrow">Big number bar, loops</div><gwi-chart type="stat-bar" unit="%" title="Short-form video is part of daily life" subtitle="This is a placeholder subtitle, please change accordingly" source="Illustrative data, not real GWI figures" base="Online adults 16 to 64"><script type="application/json">{"interval": 3, "stats": [{"value": 80, "label": "watch short-form video every week"}, {"value": 56, "label": "watch it every day"}, {"value": 34, "label": "say it takes up most of their media time", "mark": "*"}], "notes": ["* Illustrative note, please change accordingly"]}</script></gwi-chart></div>
+<details><summary>Embed code</summary><p class="note">One tall bar that stretches from one stat to the next and loops. Keep the data script inside the tag.</p><div class="code"><button class="copy" type="button">Copy</button><pre><code>&lt;gwi-chart
+  type=&quot;stat-bar&quot;
+  unit=&quot;%&quot;
+  title=&quot;Short-form video is part of daily life&quot;
+  subtitle=&quot;This is a placeholder subtitle, please change accordingly&quot;
+  source=&quot;Illustrative data, not real GWI figures&quot;
+  base=&quot;Online adults 16 to 64&quot;&gt;
+  &lt;script type=&quot;application/json&quot;&gt;
+  {
+    &quot;interval&quot;: 3,
+    &quot;stats&quot;: [
+      {
+        &quot;value&quot;: 80,
+        &quot;label&quot;: &quot;watch short-form video every week&quot;
+      },
+      {
+        &quot;value&quot;: 56,
+        &quot;label&quot;: &quot;watch it every day&quot;
+      },
+      {
+        &quot;value&quot;: 34,
+        &quot;label&quot;: &quot;say it takes up most of their media time&quot;,
+        &quot;mark&quot;: &quot;*&quot;
+      }
+    ],
+    &quot;notes&quot;: [
+      &quot;* Illustrative note, please change accordingly&quot;
+    ]
+  }
+  &lt;/script&gt;
+&lt;/gwi-chart&gt;</code></pre></div></details></section>
+<section id="bar-ranked"><div class="demo"><div class="eyebrow">Bar, ranked with reference line</div><gwi-chart type="bar" ranked="" unit="%" max="100" reference="{&quot;value&quot;:50,&quot;label&quot;:&quot;Majority&quot;}" title="Who answers when AI gets it wrong?" subtitle="This is a placeholder subtitle, please change accordingly" source="Illustrative data, not real GWI figures" base="Online adults 16 to 64"><script type="application/json">{"categories": ["Shared responsibility", "The organisation", "The AI provider", "The employee using the output"], "series": [{"name": "Share", "values": [35, 24, 21, 19]}]}</script></gwi-chart></div>
+<details><summary>Embed code</summary><p class="note"><code>ranked</code> adds the numbered badges. <code>reference</code> draws the dotted line, use it with <code>max</code>.</p><div class="code"><button class="copy" type="button">Copy</button><pre><code>&lt;gwi-chart
+  type=&quot;bar&quot;
+  ranked=&quot;&quot;
+  unit=&quot;%&quot;
+  max=&quot;100&quot;
+  reference=&quot;{&amp;quot;value&amp;quot;:50,&amp;quot;label&amp;quot;:&amp;quot;Majority&amp;quot;}&quot;
+  title=&quot;Who answers when AI gets it wrong?&quot;
+  subtitle=&quot;This is a placeholder subtitle, please change accordingly&quot;
+  source=&quot;Illustrative data, not real GWI figures&quot;
+  base=&quot;Online adults 16 to 64&quot;&gt;
+  &lt;script type=&quot;application/json&quot;&gt;
+  {
+    &quot;categories&quot;: [
+      &quot;Shared responsibility&quot;,
+      &quot;The organisation&quot;,
+      &quot;The AI provider&quot;,
+      &quot;The employee using the output&quot;
+    ],
+    &quot;series&quot;: [
+      {
+        &quot;name&quot;: &quot;Share&quot;,
+        &quot;values&quot;: [
+          35,
+          24,
+          21,
+          19
+        ]
+      }
+    ]
+  }
+  &lt;/script&gt;
+&lt;/gwi-chart&gt;</code></pre></div></details></section>
+<section id="bar-groups"><div class="demo"><div class="eyebrow">Bar, in groups with a switchable key</div><gwi-chart type="bar" unit="%" title="Attitudes differ by experience" subtitle="This is a placeholder subtitle, please change accordingly" source="Illustrative data, not real GWI figures" base="Online adults 16 to 64"><script type="application/json">{"groups": [{"name": "Heavy users", "items": [{"name": "Trust AI insights", "value": 62}, {"name": "Check the sources", "value": 48}]}, {"name": "Light users", "items": [{"name": "Trust AI insights", "value": 38}, {"name": "Check the sources", "value": 41}]}]}</script></gwi-chart></div>
+<details><summary>Embed code</summary><p class="note">Each group gets its own colour and a rule between groups. Clicking a group in the key switches it off.</p><div class="code"><button class="copy" type="button">Copy</button><pre><code>&lt;gwi-chart
+  type=&quot;bar&quot;
+  unit=&quot;%&quot;
+  title=&quot;Attitudes differ by experience&quot;
+  subtitle=&quot;This is a placeholder subtitle, please change accordingly&quot;
+  source=&quot;Illustrative data, not real GWI figures&quot;
+  base=&quot;Online adults 16 to 64&quot;&gt;
+  &lt;script type=&quot;application/json&quot;&gt;
+  {
+    &quot;groups&quot;: [
+      {
+        &quot;name&quot;: &quot;Heavy users&quot;,
+        &quot;items&quot;: [
+          {
+            &quot;name&quot;: &quot;Trust AI insights&quot;,
+            &quot;value&quot;: 62
+          },
+          {
+            &quot;name&quot;: &quot;Check the sources&quot;,
+            &quot;value&quot;: 48
+          }
+        ]
+      },
+      {
+        &quot;name&quot;: &quot;Light users&quot;,
+        &quot;items&quot;: [
+          {
+            &quot;name&quot;: &quot;Trust AI insights&quot;,
+            &quot;value&quot;: 38
+          },
+          {
+            &quot;name&quot;: &quot;Check the sources&quot;,
+            &quot;value&quot;: 41
+          }
+        ]
+      }
+    ]
+  }
+  &lt;/script&gt;
+&lt;/gwi-chart&gt;</code></pre></div></details></section>
+<section id="bar-groups-above"><div class="demo"><div class="eyebrow">Bar, in groups, statement above</div><gwi-chart type="bar" labels="above" unit="%" title="Attitudes differ by experience" subtitle="This is a placeholder subtitle, please change accordingly" source="Illustrative data, not real GWI figures" base="Online adults 16 to 64"><script type="application/json">{"groups": [{"name": "Heavy users", "items": [{"name": "Trust AI insights", "value": 62}, {"name": "Check the sources", "value": 48}]}, {"name": "Light users", "items": [{"name": "Trust AI insights", "value": 38}, {"name": "Check the sources", "value": 41}]}]}</script></gwi-chart></div>
+<details><summary>Embed code</summary><p class="note">The grouped bar chart with <code>labels="above"</code>: each statement sits above its bar and the bars run the full width.</p><div class="code"><button class="copy" type="button">Copy</button><pre><code>&lt;gwi-chart
+  type=&quot;bar&quot; labels=&quot;above&quot;
+  unit=&quot;%&quot;
+  title=&quot;Attitudes differ by experience&quot;
+  subtitle=&quot;This is a placeholder subtitle, please change accordingly&quot;
+  source=&quot;Illustrative data, not real GWI figures&quot;
+  base=&quot;Online adults 16 to 64&quot;&gt;
+  &lt;script type=&quot;application/json&quot;&gt;
+  {
+    &quot;groups&quot;: [
+      {
+        &quot;name&quot;: &quot;Heavy users&quot;,
+        &quot;items&quot;: [
+          {
+            &quot;name&quot;: &quot;Trust AI insights&quot;,
+            &quot;value&quot;: 62
+          },
+          {
+            &quot;name&quot;: &quot;Check the sources&quot;,
+            &quot;value&quot;: 48
+          }
+        ]
+      },
+      {
+        &quot;name&quot;: &quot;Light users&quot;,
+        &quot;items&quot;: [
+          {
+            &quot;name&quot;: &quot;Trust AI insights&quot;,
+            &quot;value&quot;: 38
+          },
+          {
+            &quot;name&quot;: &quot;Check the sources&quot;,
+            &quot;value&quot;: 41
+          }
+        ]
+      }
+    ]
+  }
+  &lt;/script&gt;
+&lt;/gwi-chart&gt;</code></pre></div></details></section>
+<section id="carousel"><div class="demo"><div class="eyebrow">Two charts with arrows</div><gwi-chart-carousel interval="8" download-all><gwi-chart type="bar" ranked="" height="360" max="38" unit="%" filename="bad-decisions-bar" title="Bad decisions from an AI insight" subtitle="Most common impacts" source="Illustrative data, not real GWI figures" base="Online adults 16 to 64"><script type="application/json">{"categories": ["Internal rework", "Delayed decisions", "Customer complaints", "Financial loss", "Reputational damage"], "series": [{"name": "Share", "values": [38, 36, 34, 27, 26]}]}</script></gwi-chart><gwi-chart type="treemap" height="360" unit="%" filename="bad-decisions-sector" title="Bad decisions from an AI insight" subtitle="By sector" source="Illustrative data, not real GWI figures" base="Online adults 16 to 64"><script type="application/json">{"items": [{"name": "Gaming", "value": 86}, {"name": "Sports", "value": 67}, {"name": "Agency", "value": 58}, {"name": "CPG/Retail", "value": 57}, {"name": "Media/Tech", "value": 49}, {"name": "Travel", "value": 45}], "seriesName": "Share"}</script></gwi-chart></gwi-chart-carousel></div>
+<details><summary>Embed code</summary><p class="note">Wrap the charts in <code>&lt;gwi-chart-carousel&gt;</code>. It swaps them every <code>interval</code> seconds and loops. The two arrows next to <b>Download image</b> step through the charts and stop the loop. With <code>download-all</code> the Download image button saves every chart in turn. Give every chart the same <code>height</code> so they line up.</p><div class="code"><button class="copy" type="button">Copy</button><pre><code>&lt;gwi-chart-carousel interval=&quot;8&quot; download-all&gt;
+  &lt;gwi-chart
+    type=&quot;bar&quot;
+    ranked=&quot;&quot;
+    height=&quot;360&quot;
+    max=&quot;38&quot;
+    unit=&quot;%&quot;
+    filename=&quot;bad-decisions-bar&quot;
+    title=&quot;Bad decisions from an AI insight&quot;
+    subtitle=&quot;Most common impacts&quot;
+    source=&quot;Illustrative data, not real GWI figures&quot;
+    base=&quot;Online adults 16 to 64&quot;&gt;
+    &lt;script type=&quot;application/json&quot;&gt;
+    {
+      &quot;categories&quot;: [
+        &quot;Internal rework&quot;,
+        &quot;Delayed decisions&quot;,
+        &quot;Customer complaints&quot;,
+        &quot;Financial loss&quot;,
+        &quot;Reputational damage&quot;
+      ],
+      &quot;series&quot;: [
+        {
+          &quot;name&quot;: &quot;Share&quot;,
+          &quot;values&quot;: [
+            38,
+            36,
+            34,
+            27,
+            26
+          ]
+        }
+      ]
+    }
+    &lt;/script&gt;
+  &lt;/gwi-chart&gt;
+  &lt;gwi-chart
+    type=&quot;treemap&quot;
+    height=&quot;360&quot;
+    unit=&quot;%&quot;
+    filename=&quot;bad-decisions-sector&quot;
+    title=&quot;Bad decisions from an AI insight&quot;
+    subtitle=&quot;By sector&quot;
+    source=&quot;Illustrative data, not real GWI figures&quot;
+    base=&quot;Online adults 16 to 64&quot;&gt;
+    &lt;script type=&quot;application/json&quot;&gt;
+    {
+      &quot;items&quot;: [
+        {
+          &quot;name&quot;: &quot;Gaming&quot;,
+          &quot;value&quot;: 86
+        },
+        {
+          &quot;name&quot;: &quot;Sports&quot;,
+          &quot;value&quot;: 67
+        },
+        {
+          &quot;name&quot;: &quot;Agency&quot;,
+          &quot;value&quot;: 58
+        },
+        {
+          &quot;name&quot;: &quot;CPG/Retail&quot;,
+          &quot;value&quot;: 57
+        },
+        {
+          &quot;name&quot;: &quot;Media/Tech&quot;,
+          &quot;value&quot;: 49
+        },
+        {
+          &quot;name&quot;: &quot;Travel&quot;,
+          &quot;value&quot;: 45
+        }
+      ],
+      &quot;seriesName&quot;: &quot;Share&quot;
+    }
+    &lt;/script&gt;
+  &lt;/gwi-chart&gt;
+&lt;/gwi-chart-carousel&gt;</code></pre></div></details></section>
+<section id="carousel-selector"><div class="demo"><div class="eyebrow">Two charts with a selector</div><gwi-chart-carousel interval="8" download-all selector><gwi-chart type="bar" ranked="" height="360" max="38" unit="%" filename="bad-decisions-bar" title="Bad decisions from an AI insight" subtitle="Most common impacts" source="Illustrative data, not real GWI figures" base="Online adults 16 to 64"><script type="application/json">{"categories": ["Internal rework", "Delayed decisions", "Customer complaints", "Financial loss", "Reputational damage"], "series": [{"name": "Share", "values": [38, 36, 34, 27, 26]}]}</script></gwi-chart><gwi-chart type="treemap" height="360" unit="%" filename="bad-decisions-sector" title="Bad decisions from an AI insight" subtitle="By sector" source="Illustrative data, not real GWI figures" base="Online adults 16 to 64"><script type="application/json">{"items": [{"name": "Gaming", "value": 86}, {"name": "Sports", "value": 67}, {"name": "Agency", "value": 58}, {"name": "CPG/Retail", "value": 57}, {"name": "Media/Tech", "value": 49}, {"name": "Travel", "value": 45}], "seriesName": "Share"}</script></gwi-chart></gwi-chart-carousel></div>
+<details><summary>Embed code</summary><p class="note">Add <code>selector</code> to <code>&lt;gwi-chart-carousel&gt;</code> and each chart's subtitle becomes a dropdown of all the subtitles, for example &ldquo;Most common impacts&rdquo; and &ldquo;By sector&rdquo;. Picking one shows that chart and stops the loop. Download image still saves every chart, with the plain subtitle. Give every chart the same <code>height</code> so they line up.</p><div class="code"><button class="copy" type="button">Copy</button><pre><code>&lt;gwi-chart-carousel interval=&quot;8&quot; download-all selector&gt;
+  &lt;gwi-chart
+    type=&quot;bar&quot;
+    ranked=&quot;&quot;
+    height=&quot;360&quot;
+    max=&quot;38&quot;
+    unit=&quot;%&quot;
+    filename=&quot;bad-decisions-bar&quot;
+    title=&quot;Bad decisions from an AI insight&quot;
+    subtitle=&quot;Most common impacts&quot;
+    source=&quot;Illustrative data, not real GWI figures&quot;
+    base=&quot;Online adults 16 to 64&quot;&gt;
+    &lt;script type=&quot;application/json&quot;&gt;
+    {
+      &quot;categories&quot;: [
+        &quot;Internal rework&quot;,
+        &quot;Delayed decisions&quot;,
+        &quot;Customer complaints&quot;,
+        &quot;Financial loss&quot;,
+        &quot;Reputational damage&quot;
+      ],
+      &quot;series&quot;: [
+        {
+          &quot;name&quot;: &quot;Share&quot;,
+          &quot;values&quot;: [
+            38,
+            36,
+            34,
+            27,
+            26
+          ]
+        }
+      ]
+    }
+    &lt;/script&gt;
+  &lt;/gwi-chart&gt;
+  &lt;gwi-chart
+    type=&quot;treemap&quot;
+    height=&quot;360&quot;
+    unit=&quot;%&quot;
+    filename=&quot;bad-decisions-sector&quot;
+    title=&quot;Bad decisions from an AI insight&quot;
+    subtitle=&quot;By sector&quot;
+    source=&quot;Illustrative data, not real GWI figures&quot;
+    base=&quot;Online adults 16 to 64&quot;&gt;
+    &lt;script type=&quot;application/json&quot;&gt;
+    {
+      &quot;items&quot;: [
+        {
+          &quot;name&quot;: &quot;Gaming&quot;,
+          &quot;value&quot;: 86
+        },
+        {
+          &quot;name&quot;: &quot;Sports&quot;,
+          &quot;value&quot;: 67
+        },
+        {
+          &quot;name&quot;: &quot;Agency&quot;,
+          &quot;value&quot;: 58
+        },
+        {
+          &quot;name&quot;: &quot;CPG/Retail&quot;,
+          &quot;value&quot;: 57
+        },
+        {
+          &quot;name&quot;: &quot;Media/Tech&quot;,
+          &quot;value&quot;: 49
+        },
+        {
+          &quot;name&quot;: &quot;Travel&quot;,
+          &quot;value&quot;: 45
+        }
+      ],
+      &quot;seriesName&quot;: &quot;Share&quot;
+    }
+    &lt;/script&gt;
+  &lt;/gwi-chart&gt;
+&lt;/gwi-chart-carousel&gt;</code></pre></div></details></section>
+<section id="styling"><div class="demo"><div class="eyebrow">Inline styling</div><gwi-chart type="bar" ranked="" unit="%" title="Styled inline with CSS variables" subtitle="Blue, square corners, thicker bars" source="Illustrative data, not real GWI figures" base="Online adults 16 to 64" style="--gwi-pink:#0055FF; --gwi-radius:0px; --gwi-bar-height:28px; --gwi-title-size:40px"><script type="application/json">{"categories": ["Short-form video", "Social networks", "Streaming", "Messaging"], "series": [{"name": "Share", "values": [34, 22, 18, 14]}]}</script></gwi-chart></div>
+<details open><summary>CSS variables</summary><p class="note">Set any of these in the <code>style</code> attribute of the <code>&lt;gwi-chart&gt;</code> tag. Nothing changes if you set none. The Download image picture keeps the styling. Full list and defaults are in README.md.</p><ul class="vars"><li><code>--gwi-pink, --gwi-lime, --gwi-deep, --gwi-dlime, --gwi-grey</code> <span>Data colours</span></li><li><code>--gwi-ramp-1 to --gwi-ramp-9</code> <span>Pink ramp for treemap, donut and heatmap</span></li><li><code>--gwi-ink, --gwi-ink-strong, --gwi-muted, --gwi-soft</code> <span>Text colours</span></li><li><code>--gwi-grid, --gwi-track, --gwi-axis</code> <span>Rules, bar tracks, axis lines</span></li><li><code>--gwi-radius, --gwi-bar-height</code> <span>Corner radius, bar thickness</span></li><li><code>--gwi-font, --gwi-number-font</code> <span>Fonts</span></li><li><code>--gwi-title-size, --gwi-title-weight, --gwi-sub-size</code> <span>Title and subtitle</span></li><li><code>--gwi-stat-size, --gwi-stat-label-size, --gwi-stats-cols, --gwi-stats-gap, --gwi-stat-bar-height</code> <span>Big numbers</span></li><li><code>--gwi-head-gap, --gwi-foot-gap, --gwi-max-width</code> <span>Spacing and width</span></li><li><code>--gwi-btn-radius, --gwi-btn-height</code> <span>Buttons</span></li></ul><div class="code"><button class="copy" type="button">Copy</button><pre><code>&lt;gwi-chart
+  type=&quot;bar&quot;
+  ranked=&quot;&quot;
+  unit=&quot;%&quot;
+  title=&quot;Styled inline with CSS variables&quot;
+  subtitle=&quot;Blue, square corners, thicker bars&quot;
+  source=&quot;Illustrative data, not real GWI figures&quot;
+  base=&quot;Online adults 16 to 64&quot;
+  style=&quot;--gwi-pink:#0055FF; --gwi-radius:0px; --gwi-bar-height:28px; --gwi-title-size:40px&quot;&gt;
+  &lt;script type=&quot;application/json&quot;&gt;
+  {
+    &quot;categories&quot;: [
+      &quot;Short-form video&quot;,
+      &quot;Social networks&quot;,
+      &quot;Streaming&quot;,
+      &quot;Messaging&quot;
+    ],
+    &quot;series&quot;: [
+      {
+        &quot;name&quot;: &quot;Share&quot;,
+        &quot;values&quot;: [
+          34,
+          22,
+          18,
+          14
+        ]
+      }
+    ]
+  }
+  &lt;/script&gt;
+&lt;/gwi-chart&gt;</code></pre></div></details></section>
+
+<footer><h2>Put a chart on a page</h2>
+<pre><code>&lt;!-- Load the component once per site or page. In Webflow this goes in the site-wide footer custom code, not in each embed. --&gt;
+&lt;script src="https://cdn.jsdelivr.net/gh/GWI-GlobalWebIndex/InteractiveGraphs@1.3.0/gwi-chart.standalone.js"&gt;&lt;/script&gt;
+
+&lt;gwi-chart type="bar" unit="%" title="Short-form video leads"
+  subtitle="Share of online adults who use each weekly"
+  source="GWI Core, Q2 2026"
+  base="Online adults 16 to 64"
+  source-url="https://example.com/core" question="Q4. Which of the following do you use weekly?" question-url="https://example.com/q4"
+  src="data/video.json"&gt;&lt;/gwi-chart&gt;</code></pre>
+<p>Full instructions, data formats and attributes are in README.md in this repository.</p></footer>
+<!-- GALLERY ONLY: this line loads the chart component (the same single file the website uses) so the examples above work. Do NOT copy it into each Webflow embed. The Webflow site loads the component once, from the site-wide footer code. Only the <gwi-chart> tag from each "Embed code" box gets pasted into Webflow. -->
+<script src="gwi-chart.standalone.js"></script>
+<script>
+document.querySelectorAll('.copy').forEach(function(b){b.addEventListener('click',function(){var t=b.parentNode.querySelector('code').textContent;(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(function(){b.textContent='Copied';setTimeout(function(){b.textContent='Copy'},1500)},function(){var r=document.createRange();r.selectNodeContents(b.parentNode.querySelector('code'));var s=getSelection();s.removeAllRanges();s.addRange(r)})})});
+</script></body></html>
