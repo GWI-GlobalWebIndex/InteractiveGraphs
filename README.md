@@ -23,10 +23,10 @@ It works in any HTML page or CMS, and its styles are sealed inside the tag so th
 Add this once to the site-wide footer code, not to every page or chart:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/GWI-GlobalWebIndex/InteractiveGraphs@1.3.0/gwi-chart.standalone.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/GWI-GlobalWebIndex/InteractiveGraphs@1.4.0/gwi-chart.standalone.js"></script>
 ```
 
-`@1.3.0` is a git tag. To roll out a new version, push the change, create a new tag (for example `1.3.1`) and change the number in that one line. Each chart is then a short `<gwi-chart>` tag in a code embed.
+`@1.4.0` is a git tag. To roll out a new version, push the change, create a new tag (for example `1.4.1`) and change the number in that one line. Each chart is then a short `<gwi-chart>` tag in a code embed.
 
 ## Making a chart with Claude
 
@@ -104,6 +104,14 @@ Sankey (alluvial) uses links between named nodes. Columns are worked out for you
 ```
 
 Use a different name for the same thing at each stage, for example "Video platforms" in Research and "Video" in Buy, because a name is one node. Optional: `nodes` with a `column` number to force a column, and a `color` to set a colour. `stages` are small headings over the columns. JSON only, no CSV.
+
+Donut stat (a half donut with one highlighted share, beside a big number) uses a value and a label:
+
+```json
+{ "value": 77, "label": "of senior decision-makers agree AI often produces similar recommendations." }
+```
+
+Optional: `total` (the whole the value is a share of, default 100), `name` and `restName` (tooltip and table names for the highlighted part and the rest), `seriesName`, and `color` / `trackColor` (design system token names, see the attributes below).
 
 Big number uses a value, a label and optional tiles with a trend:
 
@@ -185,6 +193,7 @@ Each view holds the data for that chart type, in the same format as without a fi
 | `scatter` | Two measures against each other | points (name, x, y, optional group) | Axis titles from `xLabel` and `yLabel`. Names sit beside the dots and avoid each other. A `group` on each point colours by group. See the data format above |
 | `dot-plot` | Comparing values per category on one line | categories and series | Also `type="dot"` or `"dumbbell"`. Two or more series, a bar joins the dots. Values show only on hover |
 | `slope` | Change between two points in time | categories and series | Two or more series are the columns, one line per category, drawn as smooth curves. `highlight` colours one line and greys the rest |
+| `donut-stat` | One share of a total, set beside a big number | value, label (optional total) | Also `half-donut-stat` or `donut-highlight`. Big number, a rule and the statement on the left, half donut on the right (stacked on narrow screens). The highlighted part sweeps clockwise when scrolled into view and stays at its end position. The number counts up with it. No hover, popup or focus: the animation is the only interaction. Default colours: `pink.100` highlight, `neutral.40` rest. See the colour attributes |
 | `half-donut` | Share of a whole | items | Up to nine segments. Values sit on the segments, the biggest is the darkest, the key runs in two columns under a rule. Hover a segment to isolate it |
 
 ## Attributes
@@ -197,6 +206,8 @@ Each view holds the data for that chart type, in the same format as without a fi
 | `questions`, `question`, `question-url` | The questions asked to get the data, shown on the back of the card. `questions` is a JSON list of `{text, url}`. For one question use `question` and `question-url` |
 | `aspect` | Shape of the graph. Default `4:3`, which grows taller only when the data needs it. Also `1:1`, `5:4`, `16:9` or `auto` (the natural height) |
 | `unit` | `%` shows the GWI % symbol once and prints plain numbers. `$`, `£` or `€` prefixes every value. Any other text, such as `h`, is added after every value |
+| `color` | `donut-stat`: the highlighted part, as a design system token path from `tokens/color.json`, for example `color="lime.40"`, `color="pink.80"`, `color="dataviz.pink_deep"` (`color.` in front is fine). A hex that is not a token logs a warning. A light colour (lime, light pinks, grey) keeps the number and rule in ink so they stay readable. Default `pink.100` |
+| `track-color` | `donut-stat`: the rest of the donut, same token names. Default `neutral.40` |
 | `highlight` | Bars and columns, one series only. A category name or index becomes pink, the rest grey |
 | `decimals` | Fixed decimals for every number. Default is none for whole numbers and one otherwise |
 | `max` | Fixes the top of the value scale. Default is 100 for percentages, otherwise a rounded maximum |
@@ -297,6 +308,8 @@ You cannot get these wrong, because the component enforces them. Do not try to o
   before loading `source/gwi-chart.js`. `gwi-chart.standalone.js` needs no font path.
 
 ## Changing the component
+
+The token table behind `color` and `track-color` is `TOKENS` near the top of `source/gwi-chart.js`. When `tokens/color.json` in the design system changes, change it there too.
 
 Edit `source/gwi-chart.js`, then run `python3 source/build-standalone.py` to rebuild the standalone file. Colours, mark sizes and
 the key gap are constants at the top of the file, and they come from the GWI Design System colour tokens and data viz rules. If a design rule changes there, change it here too.

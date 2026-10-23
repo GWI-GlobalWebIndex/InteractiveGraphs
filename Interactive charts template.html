@@ -42,7 +42,7 @@ footer pre{background:#1E1B1A;color:#F9F7F6;padding:20px 24px;border-radius:12px
 .howto .hint{margin:16px 0 0;font-size:14px;color:var(--muted);max-width:72ch}
 </style></head><body>
 <header><div class="eyebrow">V1.3 - GWI October 2026</div><h1>Interactive charts template</h1></header>
-<nav class="toc" aria-label="Chart types"><a href="#stat">Big number and tiles</a><a href="#bar-highlight">Bar, highlighted</a><a href="#bar-single">Bar, one series</a><a href="#bar-single-above">Bar, statement above</a><a href="#bar-grouped">Bar, grouped</a><a href="#column">Column</a><a href="#column-single">Column, one series</a><a href="#column-wide">Column, wide</a><a href="#line">Line</a><a href="#area">Area</a><a href="#stacked-area">Stacked area</a><a href="#stacked-bar">Stacked bar</a><a href="#stacked-column">Stacked column</a><a href="#heatmap">Heatmap</a><a href="#treemap">Treemap</a><a href="#treemap-square">Treemap, in order</a><a href="#sankey">Sankey</a><a href="#filter">Market filter</a><a href="#scatter">Scatter plot</a><a href="#dot-plot">Dot plot</a><a href="#slope">Slope</a><a href="#half-donut">Half donut</a><a href="#stats">Big numbers</a><a href="#stat-bar">Big number bar</a><a href="#bar-ranked">Bar, ranked</a><a href="#bar-groups">Bar, in groups</a><a href="#bar-groups-above">Bar, in groups, statement above</a><a href="#carousel">Charts with arrows</a><a href="#carousel-selector">Charts with a selector</a><a href="#styling">Inline styling</a></nav>
+<nav class="toc" aria-label="Chart types"><a href="#stat">Big number and tiles</a><a href="#bar-highlight">Bar, highlighted</a><a href="#bar-single">Bar, one series</a><a href="#bar-single-above">Bar, statement above</a><a href="#bar-grouped">Bar, grouped</a><a href="#column">Column</a><a href="#column-single">Column, one series</a><a href="#column-wide">Column, wide</a><a href="#line">Line</a><a href="#area">Area</a><a href="#stacked-area">Stacked area</a><a href="#stacked-bar">Stacked bar</a><a href="#stacked-column">Stacked column</a><a href="#heatmap">Heatmap</a><a href="#treemap">Treemap</a><a href="#treemap-square">Treemap, in order</a><a href="#sankey">Sankey</a><a href="#filter">Market filter</a><a href="#scatter">Scatter plot</a><a href="#dot-plot">Dot plot</a><a href="#slope">Slope</a><a href="#half-donut">Half donut</a><a href="#donut-stat">Half donut, big number</a><a href="#stats">Big numbers</a><a href="#stat-bar">Big number bar</a><a href="#bar-ranked">Bar, ranked</a><a href="#bar-groups">Bar, in groups</a><a href="#bar-groups-above">Bar, in groups, statement above</a><a href="#carousel">Charts with arrows</a><a href="#carousel-selector">Charts with a selector</a><a href="#styling">Inline styling</a></nav>
 <section class="howto" id="how-to"><h2>How to make a chart with Claude</h2>
 <ol>
 <li><b>Pick a chart.</b> Choose the type you want from the gallery below and note its name, for example "Bar, grouped" or "Slope".</li>
@@ -1272,6 +1272,19 @@ footer pre{background:#1E1B1A;color:#F9F7F6;padding:20px 24px;border-radius:12px
     ],
     &quot;seriesName&quot;: &quot;Share of time&quot;
   }
+  &lt;/script&gt;
+&lt;/gwi-chart&gt;</code></pre></div></details></section>
+
+<section id="donut-stat"><div class="demo"><div class="eyebrow">Half donut, big number</div><gwi-chart type="donut-stat" unit="%" source="Illustrative data, not real GWI figures" base="Senior decision-makers" source-url="https://example.com/core" question="Q4. Which of the following do you use weekly?" question-url="https://example.com/q4"><script type="application/json">{"value": 77, "label": "of senior decision-makers agree AI often produces similar recommendations for different organizations."}</script></gwi-chart></div>
+<details><summary>Embed code</summary><p class="note">Webflow: paste only the <code>&lt;gwi-chart&gt;</code> tag below into a Code Embed. Keep the data script inside it, but do not add a script that loads the component. The site already does that. To change the highlight colour, add <code>color=&quot;lime.40&quot;</code> (any design system token) to the tag.</p><div class="code"><button class="copy" type="button">Copy</button><pre><code>&lt;gwi-chart type=&quot;donut-stat&quot; unit=&quot;%&quot;
+  source=&quot;GWI Core, Q2 2026&quot;
+  base=&quot;Online adults 16 to 64&quot;
+  source-url=&quot;https://example.com/core&quot;
+  question=&quot;Q4. Which of the following do you use weekly?&quot;
+  question-url=&quot;https://example.com/q4&quot;&gt;
+  &lt;script type=&quot;application/json&quot;&gt;
+  { &quot;value&quot;: 77,
+    &quot;label&quot;: &quot;of senior decision-makers agree AI often produces similar recommendations for different organizations.&quot; }
   &lt;/script&gt;
 &lt;/gwi-chart&gt;</code></pre></div></details></section>
 

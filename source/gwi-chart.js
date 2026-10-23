@@ -1,4 +1,4 @@
-/*! GWI interactive charts, v1.3.0. <gwi-chart> web component and <gwi-chart-carousel>. No dependencies.
+/*! GWI interactive charts, v1.4.0. <gwi-chart> web component and <gwi-chart-carousel>. No dependencies.
  *  Built from the GWI Design System 2026 data viz templates.
  *  Usage: load gwi-chart.js with a script tag, then  <gwi-chart type="bar" data='{...}'></gwi-chart>
  *  Docs: README.md next to this file. */
@@ -14,6 +14,33 @@
   var SETS = { 1: [C.pink], 2: [C.pink, C.lime], 3: [C.deep, C.pink, C.lime], 4: [C.deep, C.pink, C.lime, C.dlime] };
   var MAG = ['#FFE8EE', '#FFD2DF', '#FFBACE', '#FF9FBD', '#FF80A9', '#FF5993', '#FF0077', '#DC1F69', '#CC005F'];
   var DARK_ON = {}; [C.lime, C.grey].concat(MAG.slice(0, 6)).forEach(function (c) { DARK_ON[c] = 1; });
+
+  /* ---------- design system colour tokens by name (tokens/color.json), for the colour="" attribute ----------
+   * Any token can be passed by its path, for example color="lime.40" or color="color.pink.100". Keep in step with color.json. */
+  var TOKENS = {};
+  (function () {
+    function add(group, steps, hexes) { steps.forEach(function (st, i) { TOKENS[group + '.' + st] = '#' + hexes[i]; }); }
+    add('pink', [10, 20, 30, 40, 50, 60, 70, 80, 90, 100], ['FFF1F5', 'FFE8EE', 'FFD2DF', 'FFBACE', 'FF9FBD', 'FF80A9', 'FF5993', 'FF0077', 'DC1F69', 'CC005F']);
+    add('lime', [10, 20, 30, 40, 50], ['F5FFD7', 'EDFFB8', 'D2EA88', 'B9DB51', '729508']);
+    add('orange', [10, 20, 30, 40, 50], ['FFF1E6', 'FFE3D1', 'FDC9A6', 'FD9647', 'D5661B']);
+    add('neutral', [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100], ['FFFFFF', 'FBFAFA', 'F9F7F6', 'E8E5E3', 'D4D0CE', 'B0ACAA', '9C9896', '7F7B79', '4C4947', '282523', '1E1B1A']);
+    add('accessory', ['success', 'warning', 'error', 'info'], ['00C28B', 'E6BA35', 'EC2352', '0088FF']);
+    TOKENS['dataviz.pink_deep'] = '#940045'; TOKENS['dataviz.highlight'] = TOKENS['pink.80']; TOKENS['dataviz.context'] = TOKENS['neutral.50'];
+    ['pink.20', 'pink.30', 'pink.40', 'pink.50', 'pink.60', 'pink.70', 'pink.80', 'pink.90', 'pink.100'].forEach(function (k, i) { TOKENS['dataviz.magnitude.' + (i + 1)] = TOKENS[k]; });
+    TOKENS['dataviz.series_2.1'] = TOKENS['pink.80']; TOKENS['dataviz.series_2.2'] = TOKENS['lime.40'];
+  })();
+  var TOKVALS = {}; Object.keys(TOKENS).forEach(function (k) { TOKVALS[TOKENS[k]] = 1; });
+  function tokColor(v, dflt) { /* a token path ("lime.40", "color.pink.100", "pink-100") or a hex colour. Anything else falls back to the default */
+    if (v == null || String(v).trim() === '') return dflt;
+    var raw = String(v).trim(), k = raw.toLowerCase().replace(/^color\./, '');
+    if (TOKENS[k]) return TOKENS[k];
+    k = k.replace(/-/g, '.'); if (TOKENS[k]) return TOKENS[k];
+    if (/^#[0-9a-f]{6}$/i.test(raw)) { if (!TOKVALS[raw.toUpperCase()] && window.console) console.warn('gwi-chart: ' + raw + ' is not a design system colour. Use a token name such as "pink.100".'); return raw.toUpperCase(); }
+    if (window.console) console.warn('gwi-chart: unknown colour "' + raw + '". Use a design system token such as "pink.100" or "lime.40".');
+    return dflt;
+  }
+  function lumHex(h) { var c = [1, 3, 5].map(function (i) { var x = parseInt(h.substr(i, 2), 16) / 255; return x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4); }); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; }
+  function contrastOnWhite(h) { return 1.05 / (lumHex(h) + 0.05); }
   var SYMK = 0.94; /* one uniform scale for every % symbol, in every chart: the pin is 28px wide */
   var KEYGAP = 28; /* one gap between key entries, in every chart */
   var RAD = 6; /* one corner radius for every bar, column, segment and cell */
@@ -137,8 +164,12 @@
   }
 
   /* ---------- data ---------- */
-  function normalize(raw) {
+  function normalize(raw, type) {
     var d = raw || {}, cats, series;
+    if (type === 'donut-stat') { /* one highlighted share of a total: { value, label, total?, name?, restName? } */
+      var dv = parseFloat(String(d.value == null ? 0 : d.value).replace(/[^\d.\-]/g, '')); dv = isFinite(dv) ? dv : 0;
+      return { cats: [String(d.name || 'Share'), String(d.restName || 'Rest')], series: [{ name: String(d.seriesName || d.valueLabel || 'Value'), values: [dv, 0] }], ds: { v: dv }, raw: d };
+    }
     if (d.points && d.points.length) { /* scatter */
       var gl = [], pts = d.points.map(function (p) { var g = p.group != null ? String(p.group) : null; if (g != null && gl.indexOf(g) < 0) gl.push(g); return { name: String(p.name || ''), x: num(p.x), y: num(p.y), g: g }; });
       pts.forEach(function (p) { p.gi = p.g == null ? 0 : gl.indexOf(p.g); });
@@ -177,7 +208,7 @@
   }
   var TYPES = { bar: 'bar', bars: 'bar', column: 'column', columns: 'column', line: 'line', lines: 'line', area: 'area',
     'stacked-area': 'stacked-area', 'stacked-bar': 'stacked-bar', 'stacked-column': 'stacked-column', 'stacked-col': 'stacked-column', heatmap: 'heatmap', treemap: 'treemap', sankey: 'sankey', alluvial: 'sankey', scatter: 'scatter', 'dot-plot': 'dot-plot', dot: 'dot-plot', dumbbell: 'dot-plot', slope: 'slope',
-    'half-donut': 'half-donut', donut: 'half-donut', stat: 'stat', 'big-number': 'stat', stats: 'stats', 'big-numbers': 'stats', 'stat-bar': 'stat-bar', 'big-bar': 'stat-bar' };
+    'half-donut': 'half-donut', donut: 'half-donut', 'donut-stat': 'donut-stat', 'half-donut-stat': 'donut-stat', 'donut-highlight': 'donut-stat', stat: 'stat', 'big-number': 'stat', stats: 'stats', 'big-numbers': 'stats', 'stat-bar': 'stat-bar', 'big-bar': 'stat-bar' };
 
   /* ---------- chart builders. Each returns { h, svg, tips, hover, legend:{items,align,pad,line}, aria } ---------- */
   function ctx(el, d, W) {
@@ -190,6 +221,7 @@
     var asp = a.aspect || '4:3', am = /^(\d+(?:\.\d+)?)\s*[:\/]\s*(\d+(?:\.\d+)?)$/.exec(asp);
     S.targetH = (asp === 'auto' || !am || S.height) ? 0 : Math.round(W * (+am[2]) / (+am[1])); /* 4:3 by default, taller only when the data needs it */
     S.highlight = a.highlight;
+    S.dsColor = el.getAttribute('color'); S.dsTrack = el.getAttribute('track-color'); /* donut-stat: design system token names */
     S.normalize = a.normalize !== 'false';
     S.max = a.max ? +a.max : 0;
     S.ranked = el.hasAttribute('ranked') && el.getAttribute('ranked') !== 'false'; /* pink numbered circles beside the rows of a bar chart */
@@ -605,6 +637,41 @@
     return { h: H, svg: svg, tips: tips, legend: null, aria: 'Half donut chart' };
   }
 
+  /* A half donut with one highlighted share, set beside a big number, a rule and a statement (type="donut-stat").
+   * The highlight sweeps clockwise from the left and stays at its end position. Colours are design system tokens, set with
+   * color="..." (the highlight) and track-color="..." (the rest). Defaults: pink.100 and neutral.40. */
+  function buildDonutStat(d, S) {
+    var W = S.W, A = S.anim, raw = S.raw || {}, v = Math.max(0, d.ds.v), pct = S.pct, tips = [];
+    var tot = +raw.total > 0 ? +raw.total : (S.max || (pct || v <= 100 ? 100 : nice(v).max)); if (v > tot) tot = v;
+    var share = v / tot; d.series[0].values = [v, tot - v];
+    var col = tokColor(S.dsColor || raw.color, TOKENS['pink.100']), trk = tokColor(S.dsTrack || raw.trackColor, TOKENS['neutral.40']);
+    var ink = contrastOnWhite(col) >= 3 ? col : C.ink; /* a light highlight (lime, light pink, grey) keeps the number and rule readable in ink */
+    var label = raw.label ? String(raw.label) : '', numTxt = S.vf(v), narrow = W < 560, R, cx, cy, H, LW, sz, base, ruleY, lines, LH = 20;
+    R = narrow ? W / 2 - 1 : clamp(W * 0.26, 90, 360); sz = clamp(R * 0.5, 56, 132);
+    LW = narrow ? W : W - 2 * R - 2 - 40; sz = Math.min(sz, Math.max(40, LW / (numTxt.length * 0.62)));
+    lines = label ? wrapText(label, LW, 16, 400, 7) : [];
+    var numH = sz * 0.72, Bk = numH + 21 + (lines.length ? 26 + (lines.length - 1) * LH + 5 : 0);
+    if (narrow) { cx = W / 2; cy = R + 2; base = cy + 40 + numH; H = base + 21 + (lines.length ? 26 + (lines.length - 1) * LH + 8 : 8); }
+    else { H = Math.max(R + 4, Bk + 24); cx = W - R - 1; cy = H - 2; base = (H - Bk) / 2 + numH; }
+    ruleY = base + 21;
+    var P = function (rad, t) { return [cx + rad * Math.cos(t), cy - rad * Math.sin(t)]; }, r = R * 0.365, rm = (R + r) / 2, t1 = Math.PI - share * Math.PI;
+    var ruleEnd = narrow ? W : (cy - ruleY < R ? cx - Math.sqrt(R * R - (cy - ruleY) * (cy - ruleY)) : cx - R);
+    var nm = d.cats, sn = d.series[0].name, id = S.id + 'm', ti0 = tips.length;
+    var svg = '', defs = '', rest = '', hi = '';
+    if (share < 1) rest = '<path class="nopointer" d="' + sectorPath(P, R, r, Math.min(Math.PI, t1 + 0.012), 0, 0) + '" fill="' + trk + '" aria-hidden="true"/>'; /* the rest does nothing on hover */
+    if (share > 0) {
+      var a0 = P(rm, Math.PI), a1 = P(rm, t1);
+      if (A) defs = '<mask id="' + id + '" maskUnits="userSpaceOnUse" x="0" y="0" width="' + r1(W) + '" height="' + r1(H) + '"><path d="M' + r1(a0[0]) + ' ' + r1(a0[1]) + ' A' + r1(rm) + ' ' + r1(rm) + ' 0 0 1 ' + r1(a1[0]) + ' ' + r1(a1[1]) +
+        '" fill="none" stroke="#fff" stroke-width="' + r1(R - r + 6) + '" pathLength="1000" stroke-dasharray="1000 1000" stroke-dashoffset="1000">' + an('stroke-dashoffset', 1000, 0, 0.1, 0.8) + '</path></mask>';
+      hi = '<path class="nopointer" d="' + sectorPath(P, R, r, Math.PI, t1, 0) + '" fill="' + col + '"' + (A ? ' mask="url(#' + id + ')"' : '') + ' aria-hidden="true"/>'; /* animation only: no hover, no popup */
+    }
+    var txt = T(0, base, numTxt, { size: sz, w: 400, fill: ink, cls: 'ovo', attrs: ' data-cv="' + v + '" data-delay="0.1" data-suf="' + (pct ? '%' : '') + '" style="font-variant-numeric:lining-nums;letter-spacing:-0.02em" pointer-events="none"' });
+    var small = '<line x1="0" x2="' + r1(ruleEnd) + '" y1="' + r1(ruleY) + '" y2="' + r1(ruleY) + '" stroke="' + ink + '" stroke-width="1" aria-hidden="true"/>';
+    lines.forEach(function (ln, i) { small += T(0, ruleY + 26 + i * LH, ln, { size: 16, w: 400, fill: C.ink }); });
+    svg = '<defs>' + defs + '</defs><g class="fade">' + small + '</g>' + txt + rest + hi;
+    return { h: H, svg: svg, tips: tips, legend: null, aria: 'Half donut chart: ' + numTxt + (label ? ' ' + label : '') };
+  }
+
   function buildSankey(d, S) {
     var W = S.W, A = S.anim, sk = d.sk, nodes = sk.nodes, links = sk.links, N = nodes.length, L = links.length, i, j, tips = [], svg = '';
     var stages = (S.raw && S.raw.stages) || null, nodeW = 14, pad = 14, top = stages ? 36 : 2, bot = 2;
@@ -794,7 +861,7 @@
     return { h: H, w: W, svg: svg, tips: tips, legend: null, aria: 'Slope chart' };
   }
 
-  var BUILD = { bar: buildBar, column: buildColumn, 'stacked-bar': buildStackedBar, 'stacked-column': buildStackedColumn, line: buildLine, area: buildArea, 'stacked-area': buildStackedArea, heatmap: buildHeatmap, treemap: buildTreemap, sankey: buildSankey, scatter: buildScatter, 'dot-plot': buildDotPlot, slope: buildSlope, 'half-donut': buildDonut };
+  var BUILD = { bar: buildBar, column: buildColumn, 'stacked-bar': buildStackedBar, 'stacked-column': buildStackedColumn, line: buildLine, area: buildArea, 'stacked-area': buildStackedArea, heatmap: buildHeatmap, treemap: buildTreemap, sankey: buildSankey, scatter: buildScatter, 'dot-plot': buildDotPlot, slope: buildSlope, 'half-donut': buildDonut, 'donut-stat': buildDonutStat };
 
   /* ---------- big number + tiles (HTML, not SVG) ---------- */
   function countUp(el, text) {
@@ -1060,7 +1127,7 @@
     _render(isResize) {
       var self = this, type = TYPES[(this.getAttribute('type') || '').toLowerCase()];
       if (!this._data) { if (!this.getAttribute('src')) { this._renderShell(); this._q('.stage').innerHTML = '<div class="msg">No data yet. Add a src URL, a data attribute or a &lt;script type="application/json"&gt; child, or set the data property.</div>'; } return; }
-      if (!type) { this._fail('Unknown chart type "' + this.getAttribute('type') + '". Use: bar, column, line, area, stacked-area, stacked-bar, stacked-column, heatmap, treemap, sankey, scatter, dot-plot, slope, half-donut, stat, stats or stat-bar.'); return; }
+      if (!type) { this._fail('Unknown chart type "' + this.getAttribute('type') + '". Use: bar, column, line, area, stacked-area, stacked-bar, stacked-column, heatmap, treemap, sankey, scatter, dot-plot, slope, half-donut, donut-stat, stat, stats or stat-bar.'); return; }
       fontsReady().then(function () { self._draw(type, !!isResize); });
     }
     _tok(root) { /* point the colours and corner radius drawn into the SVG / inline styles at their custom properties */
@@ -1077,7 +1144,7 @@
     _draw0(type, isResize) {
       var a = this._attrs(), stage = this._q('.stage'), W = Math.round(stage.clientWidth) || Math.round(this.getBoundingClientRect().width) || 640;
       this._lastW = W; this._renderShell(); this._type = type;
-      var raw = this._eff(), d = (type === 'stat' || type === 'stats' || type === 'stat-bar') ? null : normalize(raw);
+      var raw = this._eff(), d = (type === 'stat' || type === 'stats' || type === 'stat-bar') ? null : normalize(raw, type);
       var keyrow = this._q('.keyrow'), fdiv = this._q('.filter'), vs = this._views(), hasF = vs.length > 1;
       keyrow.classList.toggle('hasf', hasF);
       if (hasF) { var self0 = this, lbl = (this._data.filterLabel || this._data.filter || 'Filter'), cur = vs[this._view].name;
@@ -1154,7 +1221,7 @@
       var S = this._S; if (!S) return;
       [].forEach.call(svg.querySelectorAll('[data-cv]'), function (el) {
         var fv = +el.getAttribute('data-cv'), dl = (+el.getAttribute('data-delay') || 0) * 1000, dd = S.dec !== null ? S.dec : (Math.abs(fv - Math.round(fv)) < 1e-9 ? 0 : 1), t0 = null;
-        function fmt(v) { return S.prefix + v.toLocaleString('en-US', { minimumFractionDigits: dd, maximumFractionDigits: dd }) + S.suffix; }
+        function fmt(v) { return S.prefix + v.toLocaleString('en-US', { minimumFractionDigits: dd, maximumFractionDigits: dd }) + S.suffix + (el.getAttribute('data-suf') || ''); }
         el.textContent = fmt(0); el.style.opacity = '0';
         setTimeout(function () { el.style.opacity = '1'; requestAnimationFrame(function f(ts) { if (t0 === null) t0 = ts; var p = Math.min(1, (ts - t0) / 800), e = 1 - Math.pow(1 - p, 3); el.textContent = fmt(fv * e); if (p < 1) requestAnimationFrame(f); else el.textContent = fmt(fv); }); }, dl);
       });
@@ -1450,7 +1517,7 @@
   window.GwiChart = window.GwiChart || {};
   window.GwiChart.version = '1.3.0';
   window.GwiChart.cssVars = VARNAMES.slice();
-  window.GwiChart.types = ['bar', 'column', 'line', 'area', 'stacked-area', 'stacked-bar', 'stacked-column', 'heatmap', 'treemap', 'sankey', 'scatter', 'dot-plot', 'slope', 'half-donut', 'stat', 'stats', 'stat-bar'];
+  window.GwiChart.types = ['bar', 'column', 'line', 'area', 'stacked-area', 'stacked-bar', 'stacked-column', 'heatmap', 'treemap', 'sankey', 'scatter', 'dot-plot', 'slope', 'half-donut', 'donut-stat', 'stat', 'stats', 'stat-bar'];
   fontCSS();
   customElements.define('gwi-chart', GwiChart);
   if (!customElements.get('gwi-chart-carousel')) customElements.define('gwi-chart-carousel', GwiCarousel);
