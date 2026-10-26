@@ -14,6 +14,7 @@ It works in any HTML page or CMS, and its styles are sealed inside the tag so th
 | File | What it is |
 |---|---|
 | `gwi-chart.standalone.js` | **The file to put on a website.** Fonts are built in, so this one file is all a page needs. |
+| `index.html` | The template page: every chart type with its embed code to copy. It loads `gwi-chart.standalone.js` from the same folder, so it works on its own, for example on GitHub Pages. |
 | `source/gwi-chart.js` | The same component without built in fonts, and the one we edit. Loads Ovo and Instrument Sans from `source/fonts/`. Not needed on a website. |
 | `source/fonts/` | Instrument Sans and Ovo as woff2. Only needed with `source/gwi-chart.js` and for the build. |
 | `source/build-standalone.py` | Rebuilds `gwi-chart.standalone.js` after `source/gwi-chart.js` changes. |
