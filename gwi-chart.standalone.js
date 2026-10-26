@@ -650,14 +650,14 @@ window.GwiChart = window.GwiChart || {}; window.GwiChart.fonts = window.GwiChart
     var col = tokColor(S.dsColor || raw.color, TOKENS[hiDef]), trk = tokColor(S.dsTrack || raw.trackColor, TOKENS['neutral.40']);
     return { v: v, tot: tot, share: v / tot, col: col, trk: trk, ink: contrastOnWhite(col) >= 3 ? col : C.ink, label: raw.label ? String(raw.label) : '', numTxt: S.vf(v), pct: S.pct };
   }
-  function insightText(I, W, narrow, vis) { /* number size, statement lines and the height of the text block */
+  function insightText(I, W, narrow, vis, cap) { /* number size, statement lines and the height of the text block */
     var LW = narrow ? W : W - vis - 40, sz = narrow ? clamp((W + 24) * 0.2, 56, 96) : clamp((W + 24) * 0.09, 48, 120); /* the 24 is the extra side padding of the card: the number keeps its size, the visual gets smaller */
     sz = Math.min(sz, Math.max(40, LW / (I.numTxt.length * 0.62)));
-    var lines = I.label ? wrapText(I.label, LW, 16, 400, 7) : [], numH = sz * 0.72;
+    var lines = I.label ? wrapText(I.label, cap ? Math.min(LW, cap) : LW, 16, 400, 7) : [], numH = sz * 0.72;
     return { sz: sz, LW: LW, lines: lines, numH: numH, Bk: numH + 21 + (lines.length ? 26 + (lines.length - 1) * 20 + 5 : 0) };
   }
-  function insightTextSvg(I, X, base, ruleEnd, cd) { /* the number (counts up), the rule and the statement */
-    var ruleY = base + 21, num = T(0, base, I.numTxt, { size: X.sz, w: 400, fill: I.ink, cls: 'ovo', attrs: ' data-cv="' + I.v + '" data-delay="0.1"' + (cd ? ' data-cd="' + cd + '"' : '') + ' data-suf="' + (I.pct ? '%' : '') + '" style="font-variant-numeric:lining-nums;letter-spacing:-0.02em" pointer-events="none"' });
+  function insightTextSvg(I, X, base, ruleEnd, cd, o) { /* the number (counts up), the rule and the statement */
+    o = o || {}; var ruleY = base + 21, nm = o.num || { x: 0, y: base, size: X.sz, a: 'start' }, num = T(nm.x, nm.y, I.numTxt, { size: nm.size, w: 400, fill: I.ink, cls: 'ovo', a: nm.a, attrs: ' data-cv="' + I.v + '" data-delay="0.1"' + (cd ? ' data-cd="' + cd + '"' : '') + ' data-suf="' + (I.pct ? '%' : '') + '" style="font-variant-numeric:lining-nums;letter-spacing:-0.02em" pointer-events="none"' });
     var small = '<line x1="0" x2="' + r1(ruleEnd) + '" y1="' + r1(ruleY) + '" y2="' + r1(ruleY) + '" stroke="' + I.ink + '" stroke-width="1" aria-hidden="true"/>';
     X.lines.forEach(function (ln, i) { small += T(0, ruleY + 26 + i * 20, ln, { size: 16, w: 400, fill: C.ink }); });
     return '<g class="fade">' + small + '</g>' + num;
@@ -667,9 +667,10 @@ window.GwiChart = window.GwiChart || {}; window.GwiChart.fonts = window.GwiChart
   function buildInlineDonut(d, S) {
     var W = S.W, A = S.anim, I = insightParse(d, S, 'pink.100'), narrow = W < 560, R, cx, cy, H, base, X;
     R = narrow ? W / 2 - 1 : clamp(W * 0.24, 80, 240); X = insightText(I, W, narrow, 2 * R);
-    if (narrow) { cx = W / 2; cy = R + 2; base = cy + 40 + X.numH; H = base + 21 + (X.lines.length ? 26 + (X.lines.length - 1) * 20 + 8 : 8); }
+    if (narrow) { cx = W / 2; cy = R + 2; base = cy + 32 - 21; H = base + 21 + (X.lines.length ? 26 + (X.lines.length - 1) * 20 + 8 : 8); } /* narrow: the number goes in the hole */
     else { H = Math.max(R, X.Bk); cx = W - R; cy = H; base = (H - X.Bk) / 2 + X.numH; }
-    var ruleY = base + 21, P = function (rad, t) { return [cx + rad * Math.cos(t), cy - rad * Math.sin(t)]; }, r = R * 0.56, rm = (R + r) / 2, t1 = Math.PI - I.share * Math.PI, gap = 4 / rm, id = S.id + 'm'; /* a thin ring, softly rounded corners, a small gap between the two parts */
+    var ruleY = base + 21, P = function (rad, t) { return [cx + rad * Math.cos(t), cy - rad * Math.sin(t)]; }, r = R * 0.56, rm = (R + r) / 2, t1 = Math.PI - I.share * Math.PI, gap = 4 / rm, id = S.id + 'm', hn = null;
+    if (narrow) { var hsz = clamp(r * 0.8, 34, 76), nh; for (; hsz > 30; hsz -= 2) { nh = hsz * 0.72 + 4; if (r * r > nh * nh && I.numTxt.length * 0.62 * hsz <= 2 * Math.sqrt(r * r - nh * nh) * 0.92) break; } hn = { x: cx, y: cy - 6, size: hsz, a: 'middle' }; } /* a thin ring, softly rounded corners, a small gap between the two parts */
     var ruleEnd = narrow ? W : (cy - ruleY < R ? cx - Math.sqrt(R * R - (cy - ruleY) * (cy - ruleY)) : cx - R);
     var defs = '', rest = '', hi = '';
     if (I.share < 1 && (I.share === 0 || t1 - gap > 0.02)) rest = '<path class="nopointer" d="' + sectorPath(P, R, r, I.share > 0 ? t1 - gap : Math.PI, 0, RAD) + '" fill="' + I.trk + '" aria-hidden="true"/>';
@@ -679,17 +680,20 @@ window.GwiChart = window.GwiChart || {}; window.GwiChart.fonts = window.GwiChart
         '" fill="none" stroke="#fff" stroke-width="' + r1(R - r + 6) + '" pathLength="1000" stroke-dasharray="1000 1000" stroke-dashoffset="1000">' + an('stroke-dashoffset', 1000, 0, 0.1, 0.8) + '</path></mask>';
       hi = '<path class="nopointer" d="' + sectorPath(P, R, r, Math.PI, t1, RAD) + '" fill="' + I.col + '"' + (A ? ' mask="url(#' + id + ')"' : '') + ' aria-hidden="true"/>';
     }
-    return { h: H, svg: '<defs>' + defs + '</defs>' + insightTextSvg(I, X, base, ruleEnd) + rest + hi, tips: [], legend: null, aria: 'Half donut: ' + I.numTxt + (I.label ? ' ' + I.label : '') };
+    return { h: H, svg: '<defs>' + defs + '</defs>' + insightTextSvg(I, X, base, ruleEnd, 0, hn ? { num: hn } : null) + rest + hi, tips: [], legend: null, aria: 'Half donut: ' + I.numTxt + (I.label ? ' ' + I.label : '') };
   }
 
   /* inline-dots: a 10 by 10 dot matrix, one dot per percent of the total. The highlighted dots fill the end of the grid and appear one by one
    * on load. Defaults: lime.50 and neutral.40 */
   function buildInlineDots(d, S) {
-    var W = S.W, A = S.anim, I = insightParse(d, S, 'lime.50'), narrow = W < 560, side, X, H, gx, gy, base;
-    if (narrow) { side = Math.min(W, 260); X = insightText(I, W, true, 0); gx = 0; gy = 0; base = side + 40 + X.numH; H = base + 21 + (X.lines.length ? 26 + (X.lines.length - 1) * 20 + 8 : 8); }
+    var W = S.W, A = S.anim, I = insightParse(d, S, 'lime.50'), narrow = W < 560, side, X, H, gx, gy, base, hn = null;
+    if (narrow) { /* the number sits left of the matrix, the rule and statement run under both */
+      side = Math.min(W * 0.5, 200); X = insightText(I, W, true, 0); gx = W - side; gy = 0; base = side + 28 - 21; H = base + 21 + (X.lines.length ? 26 + (X.lines.length - 1) * 20 + 8 : 8);
+      var nsz = clamp((W - side - 16) / (I.numTxt.length * 0.62), 34, 72); hn = { x: 0, y: nsz * 0.72, size: nsz, a: 'start' }; /* the top of the number lines up with the top of the matrix */
+    }
     else {
-      side = clamp(W * 0.245, 100, 200); X = insightText(I, W, false, side); H = Math.max(side, X.Bk);
-      if (H > side) { side = H; X = insightText(I, W, false, side); H = Math.max(side, X.Bk); }
+      side = clamp(W * 0.245, 100, 200); X = insightText(I, W, false, side, 370); H = Math.max(side, X.Bk); /* the statement is held to 370px wide */
+      if (H > side) { side = H; X = insightText(I, W, false, side, 370); H = Math.max(side, X.Bk); }
       side = H; gx = W - side; gy = 0; base = (H - X.Bk) / 2 + X.numH;
     }
     var p = side / 9.76, sq = p * 0.76, rx = sq * 0.25, nHi = Math.round(I.share * 100), nGrey = 100 - nHi, T2 = 0.85, stag = clamp(0.9 / Math.max(1, nHi), 0.006, 0.03), grey = '', over = '', k;
@@ -701,7 +705,7 @@ window.GwiChart = window.GwiChart || {}; window.GwiChart.fonts = window.GwiChart
       }
     }
     var ruleEnd = narrow ? W : gx - 10;
-    return { h: H, svg: insightTextSvg(I, X, base, ruleEnd, T2 - 0.1) + grey + over, tips: [], legend: null, aria: 'Dot matrix: ' + I.numTxt + (I.label ? ' ' + I.label : '') };
+    return { h: H, svg: insightTextSvg(I, X, base, ruleEnd, T2 - 0.1, hn ? { num: hn } : null) + grey + over, tips: [], legend: null, aria: 'Dot matrix: ' + I.numTxt + (I.label ? ' ' + I.label : '') };
   }
 
   function buildSankey(d, S) {

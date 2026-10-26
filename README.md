@@ -168,7 +168,7 @@ only when a layout truly needs it, and ask the design lead first.
 - **A card.** A `neutral.30` background with 12px rounded corners and 32px by 28px padding. Change it with `background="..."` (any design system token) or the variables `--gwi-inline-bg`, `--gwi-inline-radius` and `--gwi-inline-pad`.
 - **Shorter.** The height comes from the text block (number, rule, statement), about 210px at 650px wide, not from the 4:3 shape. `aspect` does not apply.
 
-Layout: the big number, a rule and the statement on the left, the visual on the right. Below 560px wide the visual goes on top and the text under it. The only interaction is the animation on load: the donut sweeps clockwise and the dots appear one by one, while the number counts up. There is no hover, popup or focus.
+Layout: the big number, a rule and the statement on the left, the visual on the right. Below 560px wide (mobile) the layout changes: in the donut the number moves into the hole, and in the dot matrix the number sits to the left of the matrix, level with its top. The rule and the statement run underneath in both. On desktop the dot matrix statement is held to 370px wide so it breaks in a set place. The only interaction is the animation on load: the donut sweeps clockwise and the dots appear one by one, while the number counts up. There is no hover, popup or focus.
 
 The donut is a thin ring with softly rounded corners and a small gap between the two parts. The dot matrix first shows all 100 grey dots, then the highlighted dots turn on one after the other, starting from the bottom right cell, right to left and upwards.
 
