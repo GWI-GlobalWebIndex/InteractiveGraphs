@@ -1,4 +1,4 @@
-/*! GWI interactive charts, v1.4.0. <gwi-chart> web component and <gwi-chart-carousel>. No dependencies.
+/*! GWI interactive charts, v1.5.0. <gwi-chart> web component and <gwi-chart-carousel>. No dependencies.
  *  Built from the GWI Design System 2026 data viz templates.
  *  Usage: load gwi-chart.js with a script tag, then  <gwi-chart type="bar" data='{...}'></gwi-chart>
  *  Docs: README.md next to this file. */
@@ -166,7 +166,7 @@
   /* ---------- data ---------- */
   function normalize(raw, type) {
     var d = raw || {}, cats, series;
-    if (type === 'donut-stat') { /* one highlighted share of a total: { value, label, total?, name?, restName? } */
+    if (INSIGHT[type]) { /* one highlighted share of a total: { value, label, total?, name?, restName? } */
       var dv = parseFloat(String(d.value == null ? 0 : d.value).replace(/[^\d.\-]/g, '')); dv = isFinite(dv) ? dv : 0;
       return { cats: [String(d.name || 'Share'), String(d.restName || 'Rest')], series: [{ name: String(d.seriesName || d.valueLabel || 'Value'), values: [dv, 0] }], ds: { v: dv }, raw: d };
     }
@@ -206,9 +206,10 @@
     var head = rows.shift();
     return { categories: rows.map(function (r) { return r[0]; }), series: head.slice(1).map(function (n, j) { return { name: n, values: rows.map(function (r) { return num(r[j + 1]); }) }; }) };
   }
+  var INSIGHT = { 'inline-donut': 1, 'inline-dots': 1 }; /* Inline insights: a card with a big number and one animated visual, no title, key or buttons */
   var TYPES = { bar: 'bar', bars: 'bar', column: 'column', columns: 'column', line: 'line', lines: 'line', area: 'area',
     'stacked-area': 'stacked-area', 'stacked-bar': 'stacked-bar', 'stacked-column': 'stacked-column', 'stacked-col': 'stacked-column', heatmap: 'heatmap', treemap: 'treemap', sankey: 'sankey', alluvial: 'sankey', scatter: 'scatter', 'dot-plot': 'dot-plot', dot: 'dot-plot', dumbbell: 'dot-plot', slope: 'slope',
-    'half-donut': 'half-donut', donut: 'half-donut', 'donut-stat': 'donut-stat', 'half-donut-stat': 'donut-stat', 'donut-highlight': 'donut-stat', stat: 'stat', 'big-number': 'stat', stats: 'stats', 'big-numbers': 'stats', 'stat-bar': 'stat-bar', 'big-bar': 'stat-bar' };
+    'half-donut': 'half-donut', donut: 'half-donut', 'inline-donut': 'inline-donut', 'donut-stat': 'inline-donut', 'half-donut-stat': 'inline-donut', 'donut-highlight': 'inline-donut', 'inline-dots': 'inline-dots', 'dot-matrix': 'inline-dots', 'inline-dot-matrix': 'inline-dots', 'dots': 'inline-dots', stat: 'stat', 'big-number': 'stat', stats: 'stats', 'big-numbers': 'stats', 'stat-bar': 'stat-bar', 'big-bar': 'stat-bar' };
 
   /* ---------- chart builders. Each returns { h, svg, tips, hover, legend:{items,align,pad,line}, aria } ---------- */
   function ctx(el, d, W) {
@@ -637,39 +638,69 @@
     return { h: H, svg: svg, tips: tips, legend: null, aria: 'Half donut chart' };
   }
 
-  /* A half donut with one highlighted share, set beside a big number, a rule and a statement (type="donut-stat").
-   * The highlight sweeps clockwise from the left and stays at its end position. Colours are design system tokens, set with
-   * color="..." (the highlight) and track-color="..." (the rest). Defaults: pink.100 and neutral.40. */
-  function buildDonutStat(d, S) {
-    var W = S.W, A = S.anim, raw = S.raw || {}, v = Math.max(0, d.ds.v), pct = S.pct, tips = [];
-    var tot = +raw.total > 0 ? +raw.total : (S.max || (pct || v <= 100 ? 100 : nice(v).max)); if (v > tot) tot = v;
-    var share = v / tot; d.series[0].values = [v, tot - v];
-    var col = tokColor(S.dsColor || raw.color, TOKENS['pink.100']), trk = tokColor(S.dsTrack || raw.trackColor, TOKENS['neutral.40']);
-    var ink = contrastOnWhite(col) >= 3 ? col : C.ink; /* a light highlight (lime, light pink, grey) keeps the number and rule readable in ink */
-    var label = raw.label ? String(raw.label) : '', numTxt = S.vf(v), narrow = W < 560, R, cx, cy, H, LW, sz, base, ruleY, lines, LH = 20;
-    R = narrow ? W / 2 - 1 : clamp(W * 0.26, 90, 360); sz = clamp(R * 0.5, 56, 132);
-    LW = narrow ? W : W - 2 * R - 2 - 40; sz = Math.min(sz, Math.max(40, LW / (numTxt.length * 0.62)));
-    lines = label ? wrapText(label, LW, 16, 400, 7) : [];
-    var numH = sz * 0.72, Bk = numH + 21 + (lines.length ? 26 + (lines.length - 1) * LH + 5 : 0);
-    if (narrow) { cx = W / 2; cy = R + 2; base = cy + 40 + numH; H = base + 21 + (lines.length ? 26 + (lines.length - 1) * LH + 8 : 8); }
-    else { H = Math.max(R + 4, Bk + 24); cx = W - R - 1; cy = H - 2; base = (H - Bk) / 2 + numH; }
-    ruleY = base + 21;
-    var P = function (rad, t) { return [cx + rad * Math.cos(t), cy - rad * Math.sin(t)]; }, r = R * 0.365, rm = (R + r) / 2, t1 = Math.PI - share * Math.PI;
+  /* ---------- Inline insights ----------
+   * A small card with a big number, a rule, a statement and one animated visual. Types: inline-donut, inline-dots.
+   * No title, key or buttons (the component hides them). The card is a background colour with rounded corners and padding:
+   * --gwi-inline-bg, --gwi-inline-radius, --gwi-inline-pad, or background="neutral.20" (a design system token).
+   * color="..." is the highlight and track-color="..." the rest, also design system token names. No hover, popup or focus: the animation is the only interaction. */
+  function insightParse(d, S, hiDef) {
+    var raw = S.raw || {}, v = Math.max(0, d.ds.v), tot = +raw.total > 0 ? +raw.total : (S.max || (S.pct || v <= 100 ? 100 : nice(v).max)); if (v > tot) tot = v;
+    d.series[0].values = [v, tot - v];
+    var col = tokColor(S.dsColor || raw.color, TOKENS[hiDef]), trk = tokColor(S.dsTrack || raw.trackColor, TOKENS['neutral.40']);
+    return { v: v, tot: tot, share: v / tot, col: col, trk: trk, ink: contrastOnWhite(col) >= 3 ? col : C.ink, label: raw.label ? String(raw.label) : '', numTxt: S.vf(v), pct: S.pct };
+  }
+  function insightText(I, W, narrow, vis) { /* number size, statement lines and the height of the text block */
+    var LW = narrow ? W : W - vis - 40, sz = narrow ? clamp((W + 24) * 0.2, 56, 96) : clamp((W + 24) * 0.09, 48, 120); /* the 24 is the extra side padding of the card: the number keeps its size, the visual gets smaller */
+    sz = Math.min(sz, Math.max(40, LW / (I.numTxt.length * 0.62)));
+    var lines = I.label ? wrapText(I.label, LW, 16, 400, 7) : [], numH = sz * 0.72;
+    return { sz: sz, LW: LW, lines: lines, numH: numH, Bk: numH + 21 + (lines.length ? 26 + (lines.length - 1) * 20 + 5 : 0) };
+  }
+  function insightTextSvg(I, X, base, ruleEnd, cd) { /* the number (counts up), the rule and the statement */
+    var ruleY = base + 21, num = T(0, base, I.numTxt, { size: X.sz, w: 400, fill: I.ink, cls: 'ovo', attrs: ' data-cv="' + I.v + '" data-delay="0.1"' + (cd ? ' data-cd="' + cd + '"' : '') + ' data-suf="' + (I.pct ? '%' : '') + '" style="font-variant-numeric:lining-nums;letter-spacing:-0.02em" pointer-events="none"' });
+    var small = '<line x1="0" x2="' + r1(ruleEnd) + '" y1="' + r1(ruleY) + '" y2="' + r1(ruleY) + '" stroke="' + I.ink + '" stroke-width="1" aria-hidden="true"/>';
+    X.lines.forEach(function (ln, i) { small += T(0, ruleY + 26 + i * 20, ln, { size: 16, w: 400, fill: C.ink }); });
+    return '<g class="fade">' + small + '</g>' + num;
+  }
+
+  /* inline-donut: a half donut, the highlighted part sweeps clockwise and stays at its end position. Defaults: pink.100 and neutral.40 */
+  function buildInlineDonut(d, S) {
+    var W = S.W, A = S.anim, I = insightParse(d, S, 'pink.100'), narrow = W < 560, R, cx, cy, H, base, X;
+    R = narrow ? W / 2 - 1 : clamp(W * 0.24, 80, 240); X = insightText(I, W, narrow, 2 * R);
+    if (narrow) { cx = W / 2; cy = R + 2; base = cy + 40 + X.numH; H = base + 21 + (X.lines.length ? 26 + (X.lines.length - 1) * 20 + 8 : 8); }
+    else { H = Math.max(R, X.Bk); cx = W - R; cy = H; base = (H - X.Bk) / 2 + X.numH; }
+    var ruleY = base + 21, P = function (rad, t) { return [cx + rad * Math.cos(t), cy - rad * Math.sin(t)]; }, r = R * 0.56, rm = (R + r) / 2, t1 = Math.PI - I.share * Math.PI, gap = 4 / rm, id = S.id + 'm'; /* a thin ring, softly rounded corners, a small gap between the two parts */
     var ruleEnd = narrow ? W : (cy - ruleY < R ? cx - Math.sqrt(R * R - (cy - ruleY) * (cy - ruleY)) : cx - R);
-    var nm = d.cats, sn = d.series[0].name, id = S.id + 'm', ti0 = tips.length;
-    var svg = '', defs = '', rest = '', hi = '';
-    if (share < 1) rest = '<path class="nopointer" d="' + sectorPath(P, R, r, Math.min(Math.PI, t1 + 0.012), 0, 0) + '" fill="' + trk + '" aria-hidden="true"/>'; /* the rest does nothing on hover */
-    if (share > 0) {
+    var defs = '', rest = '', hi = '';
+    if (I.share < 1 && (I.share === 0 || t1 - gap > 0.02)) rest = '<path class="nopointer" d="' + sectorPath(P, R, r, I.share > 0 ? t1 - gap : Math.PI, 0, RAD) + '" fill="' + I.trk + '" aria-hidden="true"/>';
+    if (I.share > 0) {
       var a0 = P(rm, Math.PI), a1 = P(rm, t1);
       if (A) defs = '<mask id="' + id + '" maskUnits="userSpaceOnUse" x="0" y="0" width="' + r1(W) + '" height="' + r1(H) + '"><path d="M' + r1(a0[0]) + ' ' + r1(a0[1]) + ' A' + r1(rm) + ' ' + r1(rm) + ' 0 0 1 ' + r1(a1[0]) + ' ' + r1(a1[1]) +
         '" fill="none" stroke="#fff" stroke-width="' + r1(R - r + 6) + '" pathLength="1000" stroke-dasharray="1000 1000" stroke-dashoffset="1000">' + an('stroke-dashoffset', 1000, 0, 0.1, 0.8) + '</path></mask>';
-      hi = '<path class="nopointer" d="' + sectorPath(P, R, r, Math.PI, t1, 0) + '" fill="' + col + '"' + (A ? ' mask="url(#' + id + ')"' : '') + ' aria-hidden="true"/>'; /* animation only: no hover, no popup */
+      hi = '<path class="nopointer" d="' + sectorPath(P, R, r, Math.PI, t1, RAD) + '" fill="' + I.col + '"' + (A ? ' mask="url(#' + id + ')"' : '') + ' aria-hidden="true"/>';
     }
-    var txt = T(0, base, numTxt, { size: sz, w: 400, fill: ink, cls: 'ovo', attrs: ' data-cv="' + v + '" data-delay="0.1" data-suf="' + (pct ? '%' : '') + '" style="font-variant-numeric:lining-nums;letter-spacing:-0.02em" pointer-events="none"' });
-    var small = '<line x1="0" x2="' + r1(ruleEnd) + '" y1="' + r1(ruleY) + '" y2="' + r1(ruleY) + '" stroke="' + ink + '" stroke-width="1" aria-hidden="true"/>';
-    lines.forEach(function (ln, i) { small += T(0, ruleY + 26 + i * LH, ln, { size: 16, w: 400, fill: C.ink }); });
-    svg = '<defs>' + defs + '</defs><g class="fade">' + small + '</g>' + txt + rest + hi;
-    return { h: H, svg: svg, tips: tips, legend: null, aria: 'Half donut chart: ' + numTxt + (label ? ' ' + label : '') };
+    return { h: H, svg: '<defs>' + defs + '</defs>' + insightTextSvg(I, X, base, ruleEnd) + rest + hi, tips: [], legend: null, aria: 'Half donut: ' + I.numTxt + (I.label ? ' ' + I.label : '') };
+  }
+
+  /* inline-dots: a 10 by 10 dot matrix, one dot per percent of the total. The highlighted dots fill the end of the grid and appear one by one
+   * on load. Defaults: lime.50 and neutral.40 */
+  function buildInlineDots(d, S) {
+    var W = S.W, A = S.anim, I = insightParse(d, S, 'lime.50'), narrow = W < 560, side, X, H, gx, gy, base;
+    if (narrow) { side = Math.min(W, 260); X = insightText(I, W, true, 0); gx = 0; gy = 0; base = side + 40 + X.numH; H = base + 21 + (X.lines.length ? 26 + (X.lines.length - 1) * 20 + 8 : 8); }
+    else {
+      side = clamp(W * 0.245, 100, 200); X = insightText(I, W, false, side); H = Math.max(side, X.Bk);
+      if (H > side) { side = H; X = insightText(I, W, false, side); H = Math.max(side, X.Bk); }
+      side = H; gx = W - side; gy = 0; base = (H - X.Bk) / 2 + X.numH;
+    }
+    var p = side / 9.76, sq = p * 0.76, rx = sq * 0.25, nHi = Math.round(I.share * 100), nGrey = 100 - nHi, T2 = 0.85, stag = clamp(0.9 / Math.max(1, nHi), 0.006, 0.03), grey = '', over = '', k;
+    for (k = 0; k < 100; k++) { /* all 100 grey dots ripple in first, then the highlighted ones turn on one by one, from the bottom right cell, right to left, upwards */
+      var rr = Math.floor(k / 10), cc = k % 10, x = gx + cc * p, y = gy + rr * p, cl = 'class="nopointer" aria-hidden="true" rx="' + r1(rx) + '"';
+      grey += '<rect ' + cl + ' x="' + r1(x) + '" y="' + r1(y) + '" width="' + r1(sq) + '" height="' + r1(sq) + '" fill="' + I.trk + '"' + (A ? ' opacity="0">' + an('opacity', 0, 1, 0.1 + ((9 - rr) + (9 - cc)) / 18 * 0.35, 0.25) + '</rect>' : '/>');
+      if (k >= nGrey) { /* a hair larger than the grey dot under it, so no grey edge shows */
+        over += '<rect ' + cl + ' x="' + r1(x - 0.3) + '" y="' + r1(y - 0.3) + '" width="' + r1(sq + 0.6) + '" height="' + r1(sq + 0.6) + '" fill="' + I.col + '"' + (A ? ' opacity="0">' + an('opacity', 0, 1, T2 + (99 - k) * stag, 0.2) + '</rect>' : '/>');
+      }
+    }
+    var ruleEnd = narrow ? W : gx - 10;
+    return { h: H, svg: insightTextSvg(I, X, base, ruleEnd, T2 - 0.1) + grey + over, tips: [], legend: null, aria: 'Dot matrix: ' + I.numTxt + (I.label ? ' ' + I.label : '') };
   }
 
   function buildSankey(d, S) {
@@ -861,7 +892,7 @@
     return { h: H, w: W, svg: svg, tips: tips, legend: null, aria: 'Slope chart' };
   }
 
-  var BUILD = { bar: buildBar, column: buildColumn, 'stacked-bar': buildStackedBar, 'stacked-column': buildStackedColumn, line: buildLine, area: buildArea, 'stacked-area': buildStackedArea, heatmap: buildHeatmap, treemap: buildTreemap, sankey: buildSankey, scatter: buildScatter, 'dot-plot': buildDotPlot, slope: buildSlope, 'half-donut': buildDonut, 'donut-stat': buildDonutStat };
+  var BUILD = { bar: buildBar, column: buildColumn, 'stacked-bar': buildStackedBar, 'stacked-column': buildStackedColumn, line: buildLine, area: buildArea, 'stacked-area': buildStackedArea, heatmap: buildHeatmap, treemap: buildTreemap, sankey: buildSankey, scatter: buildScatter, 'dot-plot': buildDotPlot, slope: buildSlope, 'half-donut': buildDonut, 'inline-donut': buildInlineDonut, 'inline-dots': buildInlineDots };
 
   /* ---------- big number + tiles (HTML, not SVG) ---------- */
   function countUp(el, text) {
@@ -901,6 +932,8 @@
     ':host([hidden]){display:none}',
     '*{box-sizing:border-box}',
     '.wrap{position:relative}',
+    ':host([data-inline]) .wrap{background:var(--gwi-inline-bg,' + C.grid + ');border-radius:var(--gwi-inline-radius,12px);padding:var(--gwi-inline-pad,32px 28px);overflow:hidden}',
+    ':host([data-inline]) .head,:host([data-inline]) .keyrow,:host([data-inline]) .foot{display:none!important}',
     '.head{margin:0 0 var(--gwi-head-gap,40px)}','.head:has(+ .keyrow.on){margin-bottom:24px}',
     '.title{font-family:var(--gwi-font,' + FONT + ');font-weight:var(--gwi-title-weight,400);font-size:var(--gwi-title-size,clamp(24px,2.8vw,32px));line-height:1.12;letter-spacing:-0.012em;margin:0;color:' + C.ink + ';text-wrap:balance}',
     '.sub{margin:10px 0 0;font-size:var(--gwi-sub-size,16px);font-weight:400;color:' + C.muted + ';max-width:60ch;text-wrap:pretty}',
@@ -1042,7 +1075,7 @@
     return FONTS_READY;
   }
 
-  var ATTRS = ['type', 'data', 'src', 'title', 'subtitle', 'source', 'base', 'question', 'aspect', 'unit', 'highlight', 'decimals', 'height', 'max', 'normalize', 'animate', 'table', 'download', 'questions', 'question-url', 'source-url', 'ranked', 'reference', 'nav', 'filename', 'labels', 'layout', 'columns'];
+  var ATTRS = ['type', 'data', 'src', 'title', 'subtitle', 'source', 'base', 'question', 'aspect', 'unit', 'highlight', 'decimals', 'height', 'max', 'normalize', 'animate', 'table', 'download', 'questions', 'question-url', 'source-url', 'ranked', 'reference', 'nav', 'filename', 'labels', 'layout', 'columns', 'color', 'track-color', 'background'];
 
   var GwiChart = class extends HTMLElement {
     static get observedAttributes() { return ATTRS; }
@@ -1127,7 +1160,7 @@
     _render(isResize) {
       var self = this, type = TYPES[(this.getAttribute('type') || '').toLowerCase()];
       if (!this._data) { if (!this.getAttribute('src')) { this._renderShell(); this._q('.stage').innerHTML = '<div class="msg">No data yet. Add a src URL, a data attribute or a &lt;script type="application/json"&gt; child, or set the data property.</div>'; } return; }
-      if (!type) { this._fail('Unknown chart type "' + this.getAttribute('type') + '". Use: bar, column, line, area, stacked-area, stacked-bar, stacked-column, heatmap, treemap, sankey, scatter, dot-plot, slope, half-donut, donut-stat, stat, stats or stat-bar.'); return; }
+      if (!type) { this._fail('Unknown chart type "' + this.getAttribute('type') + '". Use: bar, column, line, area, stacked-area, stacked-bar, stacked-column, heatmap, treemap, sankey, scatter, dot-plot, slope, half-donut, inline-donut, inline-dots, stat, stats or stat-bar.'); return; }
       fontsReady().then(function () { self._draw(type, !!isResize); });
     }
     _tok(root) { /* point the colours and corner radius drawn into the SVG / inline styles at their custom properties */
@@ -1142,6 +1175,8 @@
     }
     _draw(type, isResize) { this._draw0(type, isResize); this._tok(); }
     _draw0(type, isResize) {
+      this.toggleAttribute('data-inline', !!INSIGHT[type]); /* Inline insights: card, padding, no buttons. Set before the width is measured */
+      var bgc = INSIGHT[type] ? tokColor(this.getAttribute('background'), '') : ''; this._q('.wrap').style.background = bgc; /* background="neutral.20": any design system token */
       var a = this._attrs(), stage = this._q('.stage'), W = Math.round(stage.clientWidth) || Math.round(this.getBoundingClientRect().width) || 640;
       this._lastW = W; this._renderShell(); this._type = type;
       var raw = this._eff(), d = (type === 'stat' || type === 'stats' || type === 'stat-bar') ? null : normalize(raw, type);
@@ -1223,7 +1258,7 @@
         var fv = +el.getAttribute('data-cv'), dl = (+el.getAttribute('data-delay') || 0) * 1000, dd = S.dec !== null ? S.dec : (Math.abs(fv - Math.round(fv)) < 1e-9 ? 0 : 1), t0 = null;
         function fmt(v) { return S.prefix + v.toLocaleString('en-US', { minimumFractionDigits: dd, maximumFractionDigits: dd }) + S.suffix + (el.getAttribute('data-suf') || ''); }
         el.textContent = fmt(0); el.style.opacity = '0';
-        setTimeout(function () { el.style.opacity = '1'; requestAnimationFrame(function f(ts) { if (t0 === null) t0 = ts; var p = Math.min(1, (ts - t0) / 800), e = 1 - Math.pow(1 - p, 3); el.textContent = fmt(fv * e); if (p < 1) requestAnimationFrame(f); else el.textContent = fmt(fv); }); }, dl);
+        setTimeout(function () { el.style.opacity = '1'; setTimeout(function () { requestAnimationFrame(function f(ts) { if (t0 === null) t0 = ts; var p = Math.min(1, (ts - t0) / 800), e = 1 - Math.pow(1 - p, 3); el.textContent = fmt(fv * e); if (p < 1) requestAnimationFrame(f); else el.textContent = fmt(fv); }); }, (+el.getAttribute('data-cd') || 0) * 1000); }, dl);
       });
     }
     _drawStat(d, a, animate) {
@@ -1517,7 +1552,7 @@
   window.GwiChart = window.GwiChart || {};
   window.GwiChart.version = '1.3.0';
   window.GwiChart.cssVars = VARNAMES.slice();
-  window.GwiChart.types = ['bar', 'column', 'line', 'area', 'stacked-area', 'stacked-bar', 'stacked-column', 'heatmap', 'treemap', 'sankey', 'scatter', 'dot-plot', 'slope', 'half-donut', 'donut-stat', 'stat', 'stats', 'stat-bar'];
+  window.GwiChart.types = ['bar', 'column', 'line', 'area', 'stacked-area', 'stacked-bar', 'stacked-column', 'heatmap', 'treemap', 'sankey', 'scatter', 'dot-plot', 'slope', 'half-donut', 'inline-donut', 'inline-dots', 'stat', 'stats', 'stat-bar'];
   fontCSS();
   customElements.define('gwi-chart', GwiChart);
   if (!customElements.get('gwi-chart-carousel')) customElements.define('gwi-chart-carousel', GwiCarousel);

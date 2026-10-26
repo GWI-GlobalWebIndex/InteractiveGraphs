@@ -40,9 +40,10 @@ footer pre{background:#1E1B1A;color:#F9F7F6;padding:20px 24px;border-radius:12px
 .howto details{max-width:760px;margin-top:0;border-top:1px solid var(--grid)}.howto pre{margin:0;max-height:420px;background:#1E1B1A;color:#F9F7F6;padding:20px 24px;border-radius:12px;white-space:pre;overflow:auto;font-size:13px;line-height:1.5}
 .vars{margin:0 0 20px;padding:0;list-style:none;display:grid;gap:8px;font-size:14px}.vars li{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:16px;padding-bottom:8px;border-bottom:1px solid var(--grid)}.vars code{font-size:.9em;background:var(--box);padding:1px 6px;border-radius:4px;overflow-wrap:anywhere}.vars span{color:var(--muted)}@media (max-width:640px){.vars li{grid-template-columns:1fr;gap:4px}}
 .howto .hint{margin:16px 0 0;font-size:14px;color:var(--muted);max-width:72ch}
+.picker{display:flex;flex-wrap:wrap;gap:10px 20px;margin:0 0 14px;font-size:13px}.picker label{display:flex;align-items:center;gap:8px;color:var(--muted)}.picker select{font:inherit;font-size:13px;color:#282523;background:#fff;border:1px solid #D4D0CE;border-radius:999px;padding:6px 12px}
 </style></head><body>
 <header><div class="eyebrow">V1.3 - GWI October 2026</div><h1>Interactive charts template</h1></header>
-<nav class="toc" aria-label="Chart types"><a href="#stat">Big number and tiles</a><a href="#bar-highlight">Bar, highlighted</a><a href="#bar-single">Bar, one series</a><a href="#bar-single-above">Bar, statement above</a><a href="#bar-grouped">Bar, grouped</a><a href="#column">Column</a><a href="#column-single">Column, one series</a><a href="#column-wide">Column, wide</a><a href="#line">Line</a><a href="#area">Area</a><a href="#stacked-area">Stacked area</a><a href="#stacked-bar">Stacked bar</a><a href="#stacked-column">Stacked column</a><a href="#heatmap">Heatmap</a><a href="#treemap">Treemap</a><a href="#treemap-square">Treemap, in order</a><a href="#sankey">Sankey</a><a href="#filter">Market filter</a><a href="#scatter">Scatter plot</a><a href="#dot-plot">Dot plot</a><a href="#slope">Slope</a><a href="#half-donut">Half donut</a><a href="#donut-stat">Half donut, big number</a><a href="#stats">Big numbers</a><a href="#stat-bar">Big number bar</a><a href="#bar-ranked">Bar, ranked</a><a href="#bar-groups">Bar, in groups</a><a href="#bar-groups-above">Bar, in groups, statement above</a><a href="#carousel">Charts with arrows</a><a href="#carousel-selector">Charts with a selector</a><a href="#styling">Inline styling</a></nav>
+<nav class="toc" aria-label="Chart types"><a href="#stat">Big number and tiles</a><a href="#bar-highlight">Bar, highlighted</a><a href="#bar-single">Bar, one series</a><a href="#bar-single-above">Bar, statement above</a><a href="#bar-grouped">Bar, grouped</a><a href="#column">Column</a><a href="#column-single">Column, one series</a><a href="#column-wide">Column, wide</a><a href="#line">Line</a><a href="#area">Area</a><a href="#stacked-area">Stacked area</a><a href="#stacked-bar">Stacked bar</a><a href="#stacked-column">Stacked column</a><a href="#heatmap">Heatmap</a><a href="#treemap">Treemap</a><a href="#treemap-square">Treemap, in order</a><a href="#sankey">Sankey</a><a href="#filter">Market filter</a><a href="#scatter">Scatter plot</a><a href="#dot-plot">Dot plot</a><a href="#slope">Slope</a><a href="#half-donut">Half donut</a><a href="#inline-donut">Inline insight, half donut</a><a href="#inline-dots">Inline insight, dot matrix</a><a href="#stats">Big numbers</a><a href="#stat-bar">Big number bar</a><a href="#bar-ranked">Bar, ranked</a><a href="#bar-groups">Bar, in groups</a><a href="#bar-groups-above">Bar, in groups, statement above</a><a href="#carousel">Charts with arrows</a><a href="#carousel-selector">Charts with a selector</a><a href="#styling">Inline styling</a></nav>
 <section class="howto" id="how-to"><h2>How to make a chart with Claude</h2>
 <ol>
 <li><b>Pick a chart.</b> Choose the type you want from the gallery below and note its name, for example "Bar, grouped" or "Slope".</li>
@@ -1275,16 +1276,19 @@ footer pre{background:#1E1B1A;color:#F9F7F6;padding:20px 24px;border-radius:12px
   &lt;/script&gt;
 &lt;/gwi-chart&gt;</code></pre></div></details></section>
 
-<section id="donut-stat"><div class="demo"><div class="eyebrow">Half donut, big number</div><gwi-chart type="donut-stat" unit="%" source="Illustrative data, not real GWI figures" base="Senior decision-makers" source-url="https://example.com/core" question="Q4. Which of the following do you use weekly?" question-url="https://example.com/q4"><script type="application/json">{"value": 77, "label": "of senior decision-makers agree AI often produces similar recommendations for different organizations."}</script></gwi-chart></div>
-<details><summary>Embed code</summary><p class="note">Webflow: paste only the <code>&lt;gwi-chart&gt;</code> tag below into a Code Embed. Keep the data script inside it, but do not add a script that loads the component. The site already does that. To change the highlight colour, add <code>color=&quot;lime.40&quot;</code> (any design system token) to the tag.</p><div class="code"><button class="copy" type="button">Copy</button><pre><code>&lt;gwi-chart type=&quot;donut-stat&quot; unit=&quot;%&quot;
-  source=&quot;GWI Core, Q2 2026&quot;
-  base=&quot;Online adults 16 to 64&quot;
-  source-url=&quot;https://example.com/core&quot;
-  question=&quot;Q4. Which of the following do you use weekly?&quot;
-  question-url=&quot;https://example.com/q4&quot;&gt;
+<section id="inline-donut"><div class="demo"><div class="eyebrow">Inline insight, half donut</div><gwi-chart type="inline-donut" unit="%"><script type="application/json">{"value": 77, "label": "of senior decision-makers agree AI often produces similar recommendations for different organizations."}</script></gwi-chart></div>
+<details><summary>Embed code</summary><p class="note">Webflow: paste only the <code>&lt;gwi-chart&gt;</code> tag below into a Code Embed. Keep the data script inside it, but do not add a script that loads the component. The site already does that. Inline insights have no title, subtitle or buttons, so source, base and questions are not shown. To change colours, add <code>color=&quot;lime.50&quot;</code> or <code>background=&quot;neutral.20&quot;</code> (any design system token) to the tag.</p><div class="code"><button class="copy" type="button">Copy</button><pre><code>&lt;gwi-chart type=&quot;inline-donut&quot; unit=&quot;%&quot;&gt;
   &lt;script type=&quot;application/json&quot;&gt;
   { &quot;value&quot;: 77,
     &quot;label&quot;: &quot;of senior decision-makers agree AI often produces similar recommendations for different organizations.&quot; }
+  &lt;/script&gt;
+&lt;/gwi-chart&gt;</code></pre></div></details></section>
+
+<section id="inline-dots"><div class="demo"><div class="eyebrow">Inline insight, dot matrix</div><gwi-chart type="inline-dots" unit="%"><script type="application/json">{"value": 84, "label": "of leaders are confident AI can accurately explain why people behave the way they do."}</script></gwi-chart></div>
+<details><summary>Embed code</summary><p class="note">Webflow: paste only the <code>&lt;gwi-chart&gt;</code> tag below into a Code Embed. Keep the data script inside it, but do not add a script that loads the component. The site already does that. Inline insights have no title, subtitle or buttons, so source, base and questions are not shown. To change colours, add <code>color=&quot;lime.50&quot;</code> or <code>background=&quot;neutral.20&quot;</code> (any design system token) to the tag.</p><div class="code"><button class="copy" type="button">Copy</button><pre><code>&lt;gwi-chart type=&quot;inline-dots&quot; unit=&quot;%&quot;&gt;
+  &lt;script type=&quot;application/json&quot;&gt;
+  { &quot;value&quot;: 84,
+    &quot;label&quot;: &quot;of leaders are confident AI can accurately explain why people behave the way they do.&quot; }
   &lt;/script&gt;
 &lt;/gwi-chart&gt;</code></pre></div></details></section>
 
@@ -1672,4 +1676,28 @@ footer pre{background:#1E1B1A;color:#F9F7F6;padding:20px 24px;border-radius:12px
 <script src="gwi-chart.standalone.js"></script>
 <script>
 document.querySelectorAll('.copy').forEach(function(b){b.addEventListener('click',function(){var t=b.parentNode.querySelector('code').textContent;(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(function(){b.textContent='Copied';setTimeout(function(){b.textContent='Copy'},1500)},function(){var r=document.createRange();r.selectNodeContents(b.parentNode.querySelector('code'));var s=getSelection();s.removeAllRanges();s.addRange(r)})})});
-</script></body></html>
+</script><script>
+/* Inline insights: pick colours from the design system tokens. The chart and its embed code follow. */
+(function () {
+  var OPT = {
+    'color': [['Default', ''], ['pink.80', 'pink.80'], ['pink.100', 'pink.100'], ['dataviz.pink_deep', 'dataviz.pink_deep'], ['lime.40', 'lime.40'], ['lime.50', 'lime.50'], ['neutral.50', 'neutral.50']],
+    'track-color': [['Default', ''], ['neutral.30', 'neutral.30'], ['neutral.40', 'neutral.40'], ['neutral.50', 'neutral.50'], ['pink.30', 'pink.30'], ['pink.40', 'pink.40'], ['lime.20', 'lime.20'], ['lime.30', 'lime.30']],
+    'background': [['Default', ''], ['neutral.0', 'neutral.0'], ['neutral.10', 'neutral.10'], ['neutral.20', 'neutral.20'], ['pink.10', 'pink.10'], ['pink.20', 'pink.20'], ['lime.10', 'lime.10'], ['lime.20', 'lime.20']]
+  }, LAB = { 'color': 'Highlight colour', 'track-color': 'Rest colour', 'background': 'Card colour' };
+  ['inline-donut', 'inline-dots'].forEach(function (id) {
+    var sec = document.getElementById(id); if (!sec) return;
+    var ch = sec.querySelector('gwi-chart'), code = sec.querySelector('pre code'), orig = code.textContent, state = {}, box = document.createElement('div'); box.className = 'picker';
+    Object.keys(OPT).forEach(function (k) {
+      var l = document.createElement('label'), sel = document.createElement('select'); l.appendChild(document.createTextNode(LAB[k]));
+      OPT[k].forEach(function (o) { var op = document.createElement('option'); op.value = o[1]; op.textContent = o[0]; sel.appendChild(op); });
+      sel.onchange = function () {
+        state[k] = sel.value; if (sel.value) ch.setAttribute(k, sel.value); else ch.removeAttribute(k);
+        code.textContent = orig.replace(/^(<gwi-chart type="[^"]*" unit="%")/, '$1' + Object.keys(state).filter(function (x) { return state[x]; }).map(function (x) { return ' ' + x + '="' + state[x] + '"'; }).join(''));
+      };
+      l.appendChild(sel); box.appendChild(l);
+    });
+    sec.insertBefore(box, sec.querySelector('details'));
+  });
+})();
+</script>
+</body></html>

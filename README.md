@@ -23,10 +23,10 @@ It works in any HTML page or CMS, and its styles are sealed inside the tag so th
 Add this once to the site-wide footer code, not to every page or chart:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/GWI-GlobalWebIndex/InteractiveGraphs@1.4.0/gwi-chart.standalone.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/GWI-GlobalWebIndex/InteractiveGraphs@1.5.0/gwi-chart.standalone.js"></script>
 ```
 
-`@1.4.0` is a git tag. To roll out a new version, push the change, create a new tag (for example `1.4.1`) and change the number in that one line. Each chart is then a short `<gwi-chart>` tag in a code embed.
+`@1.5.0` is a git tag. To roll out a new version, push the change, create a new tag (for example `1.5.1`) and change the number in that one line. Each chart is then a short `<gwi-chart>` tag in a code embed.
 
 ## Making a chart with Claude
 
@@ -105,13 +105,13 @@ Sankey (alluvial) uses links between named nodes. Columns are worked out for you
 
 Use a different name for the same thing at each stage, for example "Video platforms" in Research and "Video" in Buy, because a name is one node. Optional: `nodes` with a `column` number to force a column, and a `color` to set a colour. `stages` are small headings over the columns. JSON only, no CSV.
 
-Donut stat (a half donut with one highlighted share, beside a big number) uses a value and a label:
+Inline insights (`inline-donut` and `inline-dots`: one share of a total, beside a big number) use a value and a label:
 
 ```json
 { "value": 77, "label": "of senior decision-makers agree AI often produces similar recommendations." }
 ```
 
-Optional: `total` (the whole the value is a share of, default 100), `name` and `restName` (tooltip and table names for the highlighted part and the rest), `seriesName`, and `color` / `trackColor` (design system token names, see the attributes below).
+Optional: `total` (the whole the value is a share of, default 100), `name` and `restName` (names for the highlighted part and the rest in the table), `seriesName`, and `color` / `trackColor` (design system token names, see the attributes below). The dot matrix is always 10 by 10 dots, one dot per percent of the total, and the highlighted dots fill the end of the grid.
 
 Big number uses a value, a label and optional tiles with a trend:
 
@@ -160,6 +160,28 @@ toward that shape but stop at a sensible size, so they can come out slightly sho
 shape. The visible space between the subtitle (or the key, when there is one) and the graph is 40px, and so is the space between the graph and the buttons row, on every chart. The key sits 24px under the subtitle and always starts at the left edge, in line with the subtitle. Use `aspect="16:9"` or `aspect="auto"`
 only when a layout truly needs it, and ask the design lead first.
 
+## Inline insights
+
+`inline-donut` and `inline-dots` are a different kind of chart: a small card that sits inside a page, built around one big number. They differ from the other charts in three ways:
+
+- **No buttons.** No "View as table", "Download data", Sources or Download image, and no title, subtitle or key. Source, base and questions are therefore not shown, so give them in the text around the card. A hidden table is still there for screen readers.
+- **A card.** A `neutral.30` background with 12px rounded corners and 32px by 28px padding. Change it with `background="..."` (any design system token) or the variables `--gwi-inline-bg`, `--gwi-inline-radius` and `--gwi-inline-pad`.
+- **Shorter.** The height comes from the text block (number, rule, statement), about 210px at 650px wide, not from the 4:3 shape. `aspect` does not apply.
+
+Layout: the big number, a rule and the statement on the left, the visual on the right. Below 560px wide the visual goes on top and the text under it. The only interaction is the animation on load: the donut sweeps clockwise and the dots appear one by one, while the number counts up. There is no hover, popup or focus.
+
+The donut is a thin ring with softly rounded corners and a small gap between the two parts. The dot matrix first shows all 100 grey dots, then the highlighted dots turn on one after the other, starting from the bottom right cell, right to left and upwards.
+
+Colours are set by token name, never by hex. `color` is the highlight, `track-color` the rest and `background` the card, and any design system token works: `color="lime.40"`, `track-color="pink.30"`, `background="lime.20"`. Defaults: the donut is `pink.100`, the dot matrix `lime.50`, the rest of each `neutral.40` and the card `neutral.30`. A light colour keeps the number and rule in ink so they stay readable. In the template page, each Inline insight has three drop-downs that set these and update the embed code to copy.
+
+```html
+<gwi-chart type="inline-dots" unit="%">
+  <script type="application/json">
+    { "value": 84, "label": "of leaders are confident AI can accurately explain why people behave the way they do." }
+  </script>
+</gwi-chart>
+```
+
 ## Filter by market or sector
 
 Most charts need no filter. When one data set holds several markets or sectors, put each in a view and the chart gets a small drop-down. It sits on the right, level with the key, when there is a key, and on the left under the subtitle when there is not. Leave `views` out and nothing is added.
@@ -193,7 +215,8 @@ Each view holds the data for that chart type, in the same format as without a fi
 | `scatter` | Two measures against each other | points (name, x, y, optional group) | Axis titles from `xLabel` and `yLabel`. Names sit beside the dots and avoid each other. A `group` on each point colours by group. See the data format above |
 | `dot-plot` | Comparing values per category on one line | categories and series | Also `type="dot"` or `"dumbbell"`. Two or more series, a bar joins the dots. Values show only on hover |
 | `slope` | Change between two points in time | categories and series | Two or more series are the columns, one line per category, drawn as smooth curves. `highlight` colours one line and greys the rest |
-| `donut-stat` | One share of a total, set beside a big number | value, label (optional total) | Also `half-donut-stat` or `donut-highlight`. Big number, a rule and the statement on the left, half donut on the right (stacked on narrow screens). The highlighted part sweeps clockwise when scrolled into view and stays at its end position. The number counts up with it. No hover, popup or focus: the animation is the only interaction. Default colours: `pink.100` highlight, `neutral.40` rest. See the colour attributes |
+| `inline-donut` | Inline insight: one share of a total, half donut | value, label (optional total) | Also `donut-stat`. See Inline insights. The highlighted part sweeps clockwise and stays at its end position |
+| `inline-dots` | Inline insight: one share of a total, 10 by 10 dot matrix | value, label (optional total) | Also `dot-matrix`. See Inline insights. The highlighted dots appear one by one |
 | `half-donut` | Share of a whole | items | Up to nine segments. Values sit on the segments, the biggest is the darkest, the key runs in two columns under a rule. Hover a segment to isolate it |
 
 ## Attributes
@@ -206,8 +229,9 @@ Each view holds the data for that chart type, in the same format as without a fi
 | `questions`, `question`, `question-url` | The questions asked to get the data, shown on the back of the card. `questions` is a JSON list of `{text, url}`. For one question use `question` and `question-url` |
 | `aspect` | Shape of the graph. Default `4:3`, which grows taller only when the data needs it. Also `1:1`, `5:4`, `16:9` or `auto` (the natural height) |
 | `unit` | `%` shows the GWI % symbol once and prints plain numbers. `$`, `£` or `€` prefixes every value. Any other text, such as `h`, is added after every value |
-| `color` | `donut-stat`: the highlighted part, as a design system token path from `tokens/color.json`, for example `color="lime.40"`, `color="pink.80"`, `color="dataviz.pink_deep"` (`color.` in front is fine). A hex that is not a token logs a warning. A light colour (lime, light pinks, grey) keeps the number and rule in ink so they stay readable. Default `pink.100` |
-| `track-color` | `donut-stat`: the rest of the donut, same token names. Default `neutral.40` |
+| `color` | Inline insights: the highlighted part, as a design system token path from `tokens/color.json`, for example `color="lime.40"`, `color="pink.80"`, `color="dataviz.pink_deep"` (`color.` in front is fine). A hex that is not a token logs a warning. A light colour (lime, light pinks, grey) keeps the number and rule in ink so they stay readable. Default `pink.100` |
+| `track-color` | Inline insights: the rest of the donut, same token names. Default `neutral.40` |
+| `background` | Inline insights: the card colour, as a design system token path, for example `background="neutral.20"`. Default `neutral.30` |
 | `highlight` | Bars and columns, one series only. A category name or index becomes pink, the rest grey |
 | `decimals` | Fixed decimals for every number. Default is none for whole numbers and one otherwise |
 | `max` | Fixes the top of the value scale. Default is 100 for percentages, otherwise a rounded maximum |
